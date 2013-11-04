@@ -1,9 +1,10 @@
 # Resources
 
 ### Interactive Procedural Street Modeling ([pdf][wonka])
-The main paper that we're working from.
+The main paper that we're working from. Their code is [here][wonka-code]).
 
 [wonka]: http://www.sci.utah.edu/~chengu/street_sig08/street_sig08.pdf
+[wonka-code]: http://www.sci.utah.edu/~chengu/street/streetmodeling.zip
 
 ### The Topology of Symmetric, Second-Order Tensor Fields ([pdf][tensor-topo])
 Some information on representing and visualizing tensor fields that could be
