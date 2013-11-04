@@ -1,0 +1,61 @@
+\documentclass{proc}
+\usepackage[colorlinks=true]{hyperref}
+
+\begin{document}
+    
+\title{Generating Street Maps with Tensor Fields}
+\author{William Clarkson, Marcella Hastings, Nathaniel Tenczar}
+
+\maketitle
+
+\section{Problem Statement}
+Our goal is to generate realistic street maps which based on local geography
+such as water boundaries, and which can be easily shaped by user-defined
+control points to quickly and easily achieve a desired layout. This has been
+achieved in \cite{wonka}. However, their implementation is roughly 100,000
+lines of C++, which the authors found difficult to understand due to a lack
+of modularity. We propose that by implementing the core functionality of this
+pipeline in a clear and modular way, we will enable future contributors
+to comprehend and build more easily upon this work.
+
+\section{Context}
+We will implement this pipeline in Haskell and make full use of the functional
+programming paradigm to accomplish the goals stated above. As many of the
+components of the pipeline are defined mathematically, a functional
+language like Haskell will lend itself well to expressing them.
+
+\section{Overview of Solution}
+As described in \cite{wonka}, we will generate a tensor field based on a set
+of constraints (including water boundaries and user-defined control points
+indicating street orientation). We will calculate the major and minor
+eigenvectors of this tensor field, and trace hyperstreamlines based on
+the eigenvectors to determine the locations of streets. We will then calculate
+intersections between these hyperstreamlines to build a graph of streets. We
+will then generate a visual representation of this street layout.
+
+\section{Obstacles}
+At present, we are unfamiliar with tensor fields and their associated
+operations. We identify this as the primary challenge to the completion of this
+project. However, we are confident that, with our background knowledge of
+mathematics and the wealth of available resources on the topic, we will be able
+to implement the necessary representations and operations of tensor fields to
+solve the problem as a whole.
+
+\section{Definition of Success}
+Our project will be a success if our implementation of the work of Chen et al.
+allows a user to provide simple constraints from which an image of a realistic
+street layout is generated which is influenced by the provided constraints. If
+time permits, we would like to provide an interactive interface in which users
+can intuitively add and edit constraints in real time.
+
+\begin{thebibliography}{9}
+\bibitem{wonka}
+    Chen, G., Esch, G., Wonka, P., Müller, P., Zhang, E.. 2008. \href{http://www.google.com/url?q=http%3A%2F%2Fpeterwonka.net%2FPublications%2Fpdfs%2F2008.SG.Chen.InteractiveProceduralStreetModeling.pdf&sa=D&sntz=1&usg=AFQjCNGp-DPZdfTyZLHmKVeefan3jltzzw}{Interactive Procedural Street Modeling}. ACM Transactions on Graphics.
+\bibitem{tensorviz}
+    Komura, Taku.  \href{http://www.google.com/url?q=http%3A%2F%2Fwww.inf.ed.ac.uk%2Fteaching%2Fcourses%2Fvis%2Flecture_notes%2Flecture14.pdf&sa=D&sntz=1&usg=AFQjCNGytegkIGcZJd_JM-3pzlilzPVH7g}{Tensor Visualization Lecture Notes}. Institute for Perception, Action \& Behaviour, School of Informatics, University of Edinburgh.
+\bibitem{tensors}
+    Delmarcelle, T.; Hesselink, L. 2006. \href{http://www.google.com/url?q=http%3A%2F%2Fwww.inf.ethz.ch%2Fpersonal%2Fpeikert%2FSciVis%2FLiterature%2FDelmarcelleHesselink94.pdf&sa=D&sntz=1&usg=AFQjCNGIb52UifdoK_NB0oB8sU_r_rebBQ}{The Topology of Symmetric, Second-Order Tensor Fields}. Visualization and Processing of Tensor Fields.
+
+\end{thebibliography}
+
+\end{document}
