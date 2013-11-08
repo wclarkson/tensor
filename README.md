@@ -22,3 +22,9 @@ Some pretty straightforward slides on understanding tensors, hyperstreamlines, e
 
 [tensor-viz]: http://www.inf.ed.ac.uk/teaching/courses/vis/lecture_notes/lecture14.pdf
 
+### A Brief Introduction to Tensors and their properties ([html][tensor-props])
+These are some general notes with useful formulas about operations on tensors
+and vectors. Includes some information about calculating eigenvectors that
+shoudld be useful.
+
+[tensor-props]: http://www.brown.edu/Departments/Engineering/Courses/En221/Notes/Tensors/Tensors.htm
