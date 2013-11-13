@@ -1,7 +1,7 @@
 # Resources
 
 ### Interactive Procedural Street Modeling ([pdf][wonka])
-The main paper that we're working from. Their code is [here][wonka-code]).
+The main paper that we're working from. Their code is [here][wonka-code].
 
 [wonka]: http://www.sci.utah.edu/~chengu/street_sig08/street_sig08.pdf
 [wonka-code]: http://www.sci.utah.edu/~chengu/street/streetmodeling.zip
