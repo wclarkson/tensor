@@ -1,5 +1,7 @@
 module Tensor where
 
+import qualified Vector2 as V2
+
 -- A tensor is a 2x2 symmetric and traceless matrix of the form
 -- R * | cos(2theta)  sin(2theta) |  = | a b |
 --     | sin(2theta) -cos(2theta) |    | _ d |
@@ -22,4 +24,10 @@ sum = foldl add trivial
 scalarTimes :: Float -> Tensor-> Tensor
 scalarTimes c (Tensor a1 b1 d1) = Tensor (c*a1) (c*b1) (c*d1)
 
-
+eigenvectors :: Tensor -> (V2.Vector2, V2.Vector2)
+eigenvectors (Tensor a1 b1 d1) =
+  let eval1 = ((a1 + d1) + sqrt (4*b1*b1 + (a1 - d1)*(a1 - d1)))/2
+      eval2 = ((a1 + d1) - sqrt (4*b1*b1 + (a1 - d1)*(a1 - d1)))/2
+      evec1 = V2.Vector2 1 ((eval1 - a1)/b1)
+      evec2 = V2.Vector2 1 ((eval2 - a1)/b1)
+  in (evec1, evec2)
