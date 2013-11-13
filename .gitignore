@@ -4,3 +4,6 @@
 *.aux
 *.log
 *.out
+
+*.o
+*.hi
