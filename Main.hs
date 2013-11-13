@@ -1,11 +1,11 @@
 import Tensor
+import TensorField
+import Constraint
+import Vector2
 import SVGWriter
 
-testDoc :: SVG
-testDoc = SVG 400 400 [
-  Rect 10 10 390 390,
-  Line 50 50 50 200,
-  Line 50 50 350 350 ]
+tf :: TensorField
+tf = makeTensorField [  Linear (Vector2 2 2) 1.7 3, Linear (Vector2 8 8) 3.14 1 ]
 
 main :: IO ()
-main = putStrLn (writeSVG testDoc)
+main = putStrLn (writeSVG (plotTensorField tf 10))

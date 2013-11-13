@@ -20,7 +20,7 @@ selfClosingTag name ps =
 writeElem :: SVGElem -> String
 writeElem (Line a b c d) =
   let attrs = zip ["x1","y1","x2","y2"] (map show [a,b,c,d])
-      disp  = [("stroke","black"), ("stroke-width","1")]
+      disp  = [("stroke","black"), ("stroke-width","0.01")]
   in selfClosingTag "line" (attrs ++ disp)
 writeElem (Rect a b c d) =
   let attrs = zip ["x","y","width","height"] (map show [a,b,c,d])
