@@ -1,4 +1,10 @@
 import Tensor
+import SVGWriter
+
+testDoc :: SVG
+testDoc = SVG 400 400 [
+  Line 50 50 50 200,
+  Line 50 50 350 350 ]
 
 main :: IO ()
-main = putStrLn "Not implemented."
+main = putStrLn (writeSVG testDoc)
