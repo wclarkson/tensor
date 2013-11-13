@@ -6,7 +6,7 @@ The main paper that we're working from. Their code is [here][wonka-code]).
 [wonka]: http://www.sci.utah.edu/~chengu/street_sig08/street_sig08.pdf
 [wonka-code]: http://www.sci.utah.edu/~chengu/street/streetmodeling.zip
 
-### Farthest Point Seeding for Efcient Placement of Streamlines ([pdf][streamlines])
+### Farthest Point Seeding for Efficient Placement of Streamlines ([pdf][streamlines])
 A paper on calculating and placing well-spaced streamlines which should be useful.
 
 [streamlines]: ftp://ftp-sop.inria.fr/geometrica/alliez/streamlines.pdf
