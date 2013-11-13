@@ -1,1 +1,1 @@
-main = undefined
+main = putStrLn "3"
