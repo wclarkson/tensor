@@ -1,5 +1,7 @@
+FLAGS=-Wall -Werror -fno-warn-name-shadowing
+
 tensor:
-	ghc Main.hs
+	ghc ${FLAGS} Main.hs
 
 clean:
 	rm -f *.hi

@@ -1,6 +1,6 @@
 module Constraint where
 
-data Position = Position { x :: Float, y :: Float }
+import Vector2
 
-data Constraint = Linear { posn :: Position, dir :: Float, mag :: Float }
-                | Radial { posn :: Position, mag :: Float }
+data Constraint = Linear { posn :: Vector2, dir :: Float, mag :: Float }
+                | Radial { posn :: Vector2, mag :: Float }
