@@ -33,7 +33,7 @@ plotTensorField tf cs res =
   let samplePts    = [ V2.Vector2 vx vy | vx<-[1..res], vy<-[1..res] ]
       tensorVals   = map tf samplePts
       tensorEvs    = map T.eigenvectors tensorVals
-      majorEvs     = map (V2.scalarTimes 0.3 . V2.unit . fst) tensorEvs
+      majorEvs     = map {-(V2.scalarTimes 0.3 . V2.unit . fst) -} (V2.unit . fst) tensorEvs
       plotVectors  = zip samplePts majorEvs
       mkVecLine (Vector2 px py, Vector2 evx evy) =
         Line px py (px+evx) (py+evy) "black" eigenVectorLineWeight

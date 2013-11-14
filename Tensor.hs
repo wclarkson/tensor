@@ -30,5 +30,5 @@ eigenvectors (Tensor a1 b1 d1) =
       eval2 = ((a1 + d1) - sqrt (4*b1*b1 + (a1 - d1)*(a1 - d1)))/2
       evec1 = V2.Vector2 1 ((eval1 - a1)/b1)
       evec2 = V2.Vector2 1 ((eval2 - a1)/b1)
-  in if V2.isNaN evec1 || V2.isNaN evec2 then (V2.zero, V2.zero)
-                                         else (evec1, evec2)
+  in if V2.isReal evec1 && V2.isReal evec2 then (evec1, evec2)
+                                           else (V2.zero, V2.zero)

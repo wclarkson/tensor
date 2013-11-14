@@ -24,5 +24,6 @@ unit v = case mag v of 0 -> Vector2 0 0
 sqMag :: Vector2 -> Float
 sqMag (Vector2 a b) = a*a + b*b
 
-isNaN :: Vector2 -> Bool
-isNaN (Vector2 a b) = Prelude.isNaN a || Prelude.isNaN b
+isReal :: Vector2 -> Bool
+isReal (Vector2 a b) = not (Prelude.isNaN a && Prelude.isNaN b) &&
+                       not (isInfinite a && isInfinite b)
