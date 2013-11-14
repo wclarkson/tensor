@@ -18,8 +18,8 @@ mag :: Vector2 -> Float
 mag (Vector2 a b) = sqrt (a*a + b*b)
 
 unit :: Vector2 -> Vector2
-unit v = case (mag v) of 0 -> Vector2 0 0
-                         m -> scalarTimes (1/m) v
+unit v = case mag v of 0 -> Vector2 0 0
+                       m -> scalarTimes (1/m) v
 
 sqMag :: Vector2 -> Float
 sqMag (Vector2 a b) = a*a + b*b
