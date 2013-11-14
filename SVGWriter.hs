@@ -5,7 +5,8 @@ svgHeader = [ "<?xml version=\"1.0\" standalone=\"no\"?>",
               "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"",
               "\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">" ]
 
-data SVGElem = Line { x1 :: Float, y1 :: Float, x2 :: Float, y2 :: Float}
+data SVGElem = Line { x1 :: Float, y1 :: Float, x2 :: Float, y2 :: Float,
+                      color :: String, strokewidth :: Float}
              | Rect { x :: Float, y :: Float,
                       rwidth :: Float, rheight :: Float }
 
@@ -18,9 +19,9 @@ selfClosingTag name ps =
   in "<" ++ name ++ " " ++ unwords attrs ++ " />"
 
 writeElem :: SVGElem -> String
-writeElem (Line a b c d) =
+writeElem (Line a b c d col sw) =
   let attrs = zip ["x1","y1","x2","y2"] (map show [a,b,c,d])
-      disp  = [("stroke","black"), ("stroke-width","0.01")]
+      disp  = [("stroke",col), ("stroke-width", show sw)]
   in selfClosingTag "line" (attrs ++ disp)
 writeElem (Rect a b c d) =
   let attrs = zip ["x","y","width","height"] (map show [a,b,c,d])

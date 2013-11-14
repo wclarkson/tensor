@@ -2,6 +2,9 @@ module Vector2 where
 
 data Vector2 = Vector2 { x :: Float, y :: Float } deriving Show
 
+zero :: Vector2
+zero = Vector2 0 0
+
 add :: Vector2 -> Vector2 -> Vector2
 add (Vector2 a b) (Vector2 c d) = Vector2 (a + c) (b + d)
 
@@ -15,7 +18,11 @@ mag :: Vector2 -> Float
 mag (Vector2 a b) = sqrt (a*a + b*b)
 
 unit :: Vector2 -> Vector2
-unit v = scalarTimes (1/(mag v)) v
+unit v = case (mag v) of 0 -> Vector2 0 0
+                         m -> scalarTimes (1/m) v
 
 sqMag :: Vector2 -> Float
 sqMag (Vector2 a b) = a*a + b*b
+
+isNaN :: Vector2 -> Bool
+isNaN (Vector2 a b) = Prelude.isNaN a || Prelude.isNaN b
