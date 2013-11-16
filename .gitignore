@@ -9,3 +9,6 @@
 *.hi
 Main
 *.svg
+
+.*.swp
+.*.swo

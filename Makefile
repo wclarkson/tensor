@@ -2,6 +2,7 @@ FLAGS=-Wall -Werror -fno-warn-name-shadowing
 
 tensor:
 	ghc ${FLAGS} Main.hs
+	rm *.hi
 	./Main > test.svg
 
 clean:
