@@ -6,7 +6,8 @@ import SVGWriter
 
 cs :: [Constraint]
 --cs = [ Linear (Vector2 2 2) 0 3, Linear (Vector2 8 8) 2.7 1 ]
-cs = [ Linear (Vector2 8 8) 0.01 3 ]
+--cs = [ Linear (Vector2 8 8) 0.01 3 ]
+cs = [ Radial (Vector2 8 8)]
 
 tf :: TensorField
 tf = makeTensorField cs

@@ -14,6 +14,11 @@ trivial = Tensor 0 0 0
 fromRTheta :: Float -> Float -> Tensor
 fromRTheta r t = Tensor (r*cos(2*t)) (r*sin(2*t)) (-1*r*cos(2*t))
 
+fromXY :: Float -> Float -> Tensor
+fromXY x y = let xy = -2 * x * y
+                 diffSquares = y * y - x * x
+             in Tensor diffSquares xy (-1 * diffSquares)
+
 add :: Tensor -> Tensor -> Tensor
 add (Tensor a1 b1 d1) (Tensor a2 b2 d2) =
   Tensor (a1+a2) (b1+b2) (d1+d2)

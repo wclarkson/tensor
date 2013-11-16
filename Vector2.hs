@@ -25,5 +25,5 @@ sqMag :: Vector2 -> Float
 sqMag (Vector2 a b) = a*a + b*b
 
 isReal :: Vector2 -> Bool
-isReal (Vector2 a b) = not (Prelude.isNaN a && Prelude.isNaN b) &&
-                       not (isInfinite a && isInfinite b)
+isReal (Vector2 a b) = not (Prelude.isNaN a || Prelude.isNaN b) &&
+                       not (isInfinite a || isInfinite b)

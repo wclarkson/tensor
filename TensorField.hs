@@ -11,9 +11,9 @@ import SVGWriter
 decayConstant :: Float
 decayConstant = 1
 eigenVectorLineWeight :: Float
-eigenVectorLineWeight = 0.1
+eigenVectorLineWeight = 0.05
 constraintLineWeight :: Float
-constraintLineWeight = 0.5
+constraintLineWeight = 0.1
 
 type TensorField = V2.Vector2 -> Tensor
 
@@ -26,14 +26,15 @@ basisFieldAtPoint pos (Linear cpos cdir cmag) =
   let const      = exp (decayConstant * V2.sqMag (V2.sub pos cpos))
       basisField = T.fromRTheta cmag cdir
   in T.scalarTimes const basisField
-basisFieldAtPoint _ _ = error "not implemented"
+basisFieldAtPoint (Vector2 xp yp) (Radial (Vector2 x0 y0)) =
+      T.fromXY (xp - x0) (yp - y0)
 
 plotTensorField :: TensorField -> [Constraint] -> Float -> SVG
 plotTensorField tf cs res =
   let samplePts    = [ V2.Vector2 vx vy | vx<-[1..res], vy<-[1..res] ]
       tensorVals   = map tf samplePts
       tensorEvs    = map T.eigenvectors tensorVals
-      majorEvs     = map {-(V2.scalarTimes 0.3 . V2.unit . fst) -} (V2.unit . fst) tensorEvs
+      majorEvs     = map (V2.scalarTimes 0.5 . V2.unit . fst) tensorEvs
       plotVectors  = zip samplePts majorEvs
       mkVecLine (Vector2 px py, Vector2 evx evy) =
         Line px py (px+evx) (py+evy) "black" eigenVectorLineWeight
@@ -41,7 +42,8 @@ plotTensorField tf cs res =
         let cx = cmag * cos cdir
             cy = cmag * sin cdir
         in Line cpx cpy (cpx+cx) (cpy+cy) "red" constraintLineWeight
-      mkConsLine _ = error "not implemented"
+      mkConsLine (Radial (Vector2 cpx cpy)) = 
+           Line cpx cpy (cpx + 0.1) (cpy + 0.1) "red" constraintLineWeight
   in SVG res res (map mkVecLine plotVectors ++ map mkConsLine cs)
 
 
