@@ -4,7 +4,7 @@ main: Main.hs
 	ghc ${FLAGS} Main.hs
 	./Main > test.svg
 
-test:
+test: Test_Tensor Test_TensorField
 	./Test_Tensor
 	./Test_TensorField
 
