@@ -9,6 +9,9 @@ data SVGElem = Line { x1 :: Float, y1 :: Float, x2 :: Float, y2 :: Float,
                       color :: String, strokewidth :: Float}
              | Rect { x :: Float, y :: Float,
                       rwidth :: Float, rheight :: Float }
+             | Circle { x :: Float, y :: Float,
+                        r :: Float, color :: String,
+                        strokewidth :: Float }
 
 data SVG = SVG { width :: Float, height :: Float, elems :: [SVGElem]}
 
@@ -27,6 +30,10 @@ writeElem (Rect a b c d) =
   let attrs = zip ["x","y","width","height"] (map show [a,b,c,d])
       disp  = [("stroke","black"), ("stroke-width","1"), ("fill","none")]
   in selfClosingTag "rect" (attrs ++ disp)
+writeElem (Circle a b rad col sw) =
+  let attrs = zip ["cx","cy","r"] (map show [a,b,rad])
+      disp  = [("stroke",col), ("stroke-width",show sw), ("fill","none")]
+  in selfClosingTag "circle" (attrs ++ disp)
 
 writeSVG :: SVG -> String
 writeSVG (SVG w h es) =
