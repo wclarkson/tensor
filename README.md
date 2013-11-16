@@ -29,7 +29,7 @@ shoudld be useful.
 
 [tensor-props]: http://www.brown.edu/Departments/Engineering/Courses/En221/Notes/Tensors/Tensors.htm
 
-## Finding Eigenvectors ([pdf][eigenvectors])
+### Finding Eigenvectors ([pdf][eigenvectors])
 The 4th page of these notes goes through the formula for the calculation of
 the eigenvectors of a 2x2 tensor.
 
