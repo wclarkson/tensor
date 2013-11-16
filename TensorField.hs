@@ -10,12 +10,17 @@ import SVGWriter
 -- Constants
 decayConstant :: Float
 decayConstant = 0.10
-eigenVectorLineWeight :: Float
-eigenVectorLineWeight = 0.05
-constraintLineWeight :: Float
-constraintLineWeight = 0.1
-constraintCircleRadius :: Float
-constraintCircleRadius = 0.5
+
+eigenvectorLine :: Vector2 -> Vector2 -> SVGElem
+eigenvectorLine (Vector2 x0 y0) (Vector2 x1 y1) =
+  Line x0 y0 x1 y1 "black" 0.05
+
+constraintLine :: Vector2 -> Vector2 -> SVGElem
+constraintLine (Vector2 x0 y0) (Vector2 x1 y1) =
+  Line x0 y0 x1 y1 "red" 0.1
+
+constraintCircle :: Vector2 -> SVGElem
+constraintCircle (Vector2 x0 y0) = Circle x0 y0 0.5 "red" 0.1
 
 type TensorField = V2.Vector2 -> Tensor
 
@@ -53,14 +58,13 @@ plotTensorField tf cs res =
       tensorEvs    = map T.eigenvectors tensorVals
       majorEvs     = map (V2.scalarTimes 0.5 . V2.unit . fst) tensorEvs
       plotVectors  = zip samplePts majorEvs
-      mkVecLine (Vector2 px py, Vector2 evx evy) =
-        Line px py (px+evx) (py+evy) "black" eigenVectorLineWeight
-      mkCons (Linear (Vector2 cpx cpy) cdir cmag) =
+      mkVecLine (p, ev) =
+        eigenvectorLine p (V2.add p ev)
+      mkCons (Linear cp cdir cmag) =
         let cx = cmag * cos cdir
             cy = cmag * sin cdir
-        in Line cpx cpy (cpx+cx) (cpy+cy) "red" constraintLineWeight
-      mkCons (Radial (Vector2 cpx cpy)) =
-        Circle cpx cpy constraintCircleRadius "red" constraintLineWeight
+        in constraintLine cp (V2.add cp (V2.Vector2 cx cy))
+      mkCons (Radial cp) = constraintCircle cp
   in SVG res res (map mkVecLine plotVectors ++ map mkCons cs)
 
 
