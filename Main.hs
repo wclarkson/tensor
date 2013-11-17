@@ -12,5 +12,17 @@ cs = [ Radial (Vector2 8 8), Linear (Vector2 2 2) 0.01 3 ]
 tf :: TensorField
 tf = makeTensorField cs
 
+majorEigenvectors :: VectorField
+majorEigenvectors = fst (tensorfieldEigenvectors tf)
+
+tracePts :: [Vector2]
+tracePts = traceStreamline majorEigenvectors (Vector2 2 2)
+
+vecToPair :: Vector2 -> (Float, Float)
+vecToPair (Vector2 vx vy) = (vx, vy)
+
+traceLine :: SVGElem
+traceLine = Polyline (map vecToPair tracePts) "green" 0.1
+
 main :: IO ()
-main = putStrLn (writeSVG (plotTensorField tf cs 20))
+main = putStrLn (writeSVG (appendElements (plotTensorField tf cs 20) [traceLine]))

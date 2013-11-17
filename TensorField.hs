@@ -24,6 +24,8 @@ constraintCircle (Vector2 x0 y0) = Circle x0 y0 0.5 "red" 0.1
 
 type TensorField = V2.Vector2 -> Tensor
 
+type VectorField = V2.Vector2 -> V2.Vector2
+
 makeTensorField :: [Constraint] -> TensorField
 makeTensorField [] _ = T.trivial
 makeTensorField cs p = T.sum (map (basisFieldAtPoint p) cs)
@@ -39,25 +41,31 @@ basisFieldAtPoint pos constraint =
                 (Radial (Vector2 x0 y0)) -> T.fromXY (xp - x0) (yp - y0)
   in T.scalarTimes k vector
 
-{--
-basisFieldAtPoint (Vector2 xp yp) constraint = 
-  let const cpos = exp (-1 * decayConstant * V2.sqMag (V2.sub pos cpos))
-      vector     =
-        case constraint of 
-          (Linear cpos cdir cmag)  -> T.fromRTheta cmag cdir
-          (Radial (Vector2 x0 y0)) -> T.fromXY (xp - x0) (yp - y0)
-  in T.scalarTimes const vector
---}
+tensorfieldEigenvectors :: TensorField -> (VectorField, VectorField)
+tensorfieldEigenvectors tf =
+  let tfEv p = T.eigenvectors (tf p)
+  in (fst . tfEv, snd . tfEv)
 
+traceStreamline :: VectorField -> Vector2 -> [Vector2]
+traceStreamline vf p0 =
+  let step            = 0.01
+      iter            = 10000 :: Int
+      mkStep ps     0 = ps
+      mkStep []     _ = []
+      mkStep ((p,vlast):pvls) n =
+        let v   = vf p
+            v'  = if V2.dot v vlast > 0 then v
+                                         else V2.scalarTimes (-1) v
+            p'  = V2.add p (V2.scalarTimes step v')
+        in  mkStep ((p',v'):(p,vlast):pvls) (n - 1)
+  in map fst (mkStep [(p0, vf p0)] iter)
 
 plotTensorField :: TensorField -> [Constraint] -> Float -> SVG
 plotTensorField tf cs res =
-  let samplePts    = [ V2.Vector2 vx vy | vx<-[1..res], vy<-[1..res] ]
-      -- this is making not real values
-      tensorVals   = map tf samplePts
-      tensorEvs    = map T.eigenvectors tensorVals
-      majorEvs     = map (V2.scalarTimes 0.5 . V2.unit . fst) tensorEvs
-      plotVectors  = zip samplePts majorEvs
+  let samplePts      = [ V2.Vector2 vx vy | vx<-[1..res], vy<-[1..res] ]
+      majorEvs       = map (fst (tensorfieldEigenvectors tf)) samplePts
+      scaledMajorEvs = map (V2.scalarTimes 0.5 . V2.unit) majorEvs
+      plotVectors  = zip samplePts scaledMajorEvs
       mkVecLine (p, ev) =
         eigenvectorLine p (V2.add p ev)
       mkCons (Linear cp cdir cmag) =

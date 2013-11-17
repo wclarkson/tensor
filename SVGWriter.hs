@@ -7,6 +7,9 @@ svgHeader = [ "<?xml version=\"1.0\" standalone=\"no\"?>",
 
 data SVGElem = Line { x1 :: Float, y1 :: Float, x2 :: Float, y2 :: Float,
                       color :: String, strokewidth :: Float}
+             | Polyline { lines :: [(Float, Float)],
+                          color :: String,
+                          strokewidth :: Float }
              | Rect { x :: Float, y :: Float,
                       rwidth :: Float, rheight :: Float }
              | Circle { x :: Float, y :: Float,
@@ -21,6 +24,9 @@ selfClosingTag name ps =
       attrs = map attrString ps
   in "<" ++ name ++ " " ++ unwords attrs ++ " />"
 
+appendElements :: SVG -> [SVGElem] -> SVG
+appendElements (SVG w h es) es' = SVG w h (es ++ es')
+
 writeElem :: SVGElem -> String
 writeElem (Line a b c d col sw) =
   let attrs = zip ["x1","y1","x2","y2"] (map show [a,b,c,d])
@@ -34,6 +40,11 @@ writeElem (Circle a b rad col sw) =
   let attrs = zip ["cx","cy","r"] (map show [a,b,rad])
       disp  = [("stroke",col), ("stroke-width",show sw), ("fill","none")]
   in selfClosingTag "circle" (attrs ++ disp)
+writeElem (Polyline ls col sw) =
+  let lp (lx, ly) = show lx ++ "," ++ show ly
+      lps   = unwords (map lp ls)
+      disp  = [("stroke",col), ("stroke-width",show sw),("fill","none")]
+  in selfClosingTag "polyline" (("points",lps):disp)
 
 writeSVG :: SVG -> String
 writeSVG (SVG w h es) =
