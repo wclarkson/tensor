@@ -1,4 +1,4 @@
-FLAGS=-Wall -Werror
+FLAGS=-Wall -Werror -fno-warn-name-shadowing
 
 main: Main.hs
 	ghc ${FLAGS} Main.hs
