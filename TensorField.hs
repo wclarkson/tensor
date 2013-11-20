@@ -10,6 +10,8 @@ import SVGWriter
 -- Constants
 decayConstant :: Float
 decayConstant = 0.10
+cycleThreshold :: Float
+cycleThreshold = 0.1
 
 eigenvectorLine :: Vector2 -> Vector2 -> SVGElem
 eigenvectorLine (Vector2 x0 y0) (Vector2 x1 y1) =
@@ -46,17 +48,20 @@ tensorfieldEigenvectors tf =
   let tfEv p = T.eigenvectors (tf p)
   in (fst . tfEv, snd . tfEv)
 
-traceStreamline :: VectorField -> Vector2 -> Float -> Int -> [Vector2]
-traceStreamline vf p0 step iter =
+traceStreamline :: VectorField -> Vector2 -> Float -> Float -> [Vector2]
+traceStreamline vf p0 step len =
   let mkStep ps     0 = ps
       mkStep []     _ = []
       mkStep ((p,vlast):pvls) n =
-        let v   = vf p
-            v'  = if V2.dot v vlast > 0 then v
+        let v     = vf p
+            v'    = if V2.dot v vlast > 0 then v
                                          else V2.scalarTimes (-1) v
-            p'  = V2.add p (V2.scalarTimes step (V2.unit v'))
-        in  mkStep ((p',v'):(p,vlast):pvls) (n - 1)
-  in map fst (mkStep [(p0, vf p0)] iter)
+            cycle = (V2.mag (V2.sub p p0) < cycleThreshold) &&
+                    (len - ((n+10) * step)) > cycleThreshold
+            p'    = V2.add p (V2.scalarTimes step (V2.unit v'))
+        in  if cycle then mkStep ((p0,vlast):(p,vlast):pvls) 0
+                     else mkStep ((p',v'):(p,vlast):pvls) (n - 1)
+  in map fst (mkStep [(p0, vf p0)] (len / step))
 
 plotTensorField :: TensorField -> [Constraint] -> Float -> SVG
 plotTensorField tf cs res =
