@@ -46,17 +46,15 @@ tensorfieldEigenvectors tf =
   let tfEv p = T.eigenvectors (tf p)
   in (fst . tfEv, snd . tfEv)
 
-traceStreamline :: VectorField -> Vector2 -> [Vector2]
-traceStreamline vf p0 =
-  let step            = 0.01
-      iter            = 10000 :: Int
-      mkStep ps     0 = ps
+traceStreamline :: VectorField -> Vector2 -> Float -> Int -> [Vector2]
+traceStreamline vf p0 step iter =
+  let mkStep ps     0 = ps
       mkStep []     _ = []
       mkStep ((p,vlast):pvls) n =
         let v   = vf p
             v'  = if V2.dot v vlast > 0 then v
                                          else V2.scalarTimes (-1) v
-            p'  = V2.add p (V2.scalarTimes step v')
+            p'  = V2.add p (V2.scalarTimes step (V2.unit v'))
         in  mkStep ((p',v'):(p,vlast):pvls) (n - 1)
   in map fst (mkStep [(p0, vf p0)] iter)
 

@@ -24,6 +24,9 @@ unit v = case mag v of 0 -> Vector2 0 0
 dot :: Vector2 -> Vector2 -> Float
 dot (Vector2 a1 b1) (Vector2 a2 b2) = a1*a2 + b1*b2
 
+avg :: Vector2 -> Vector2 -> Vector2
+avg v1 v2 = scalarTimes 0.5 (add v1 v2)
+
 sqMag :: Vector2 -> Float
 sqMag (Vector2 a b) = a*a + b*b
 
