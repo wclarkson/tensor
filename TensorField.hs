@@ -7,11 +7,17 @@ import Vector2 (Vector2 (Vector2))
 import Constraint
 import SVGWriter
 
+-- many calculations are described in
+-- Wonka: {http://peterwonka.net/Publications/pdfs/2008.SG.Chen.
+--				InteractiveProceduralStreetModeling.pdf}
+
 -- Constants
 decayConstant :: Float
 decayConstant = 0.10
 cycleThreshold :: Float
 cycleThreshold = 0.1
+
+-- Drawing Specs
 
 eigenvectorLine :: Vector2 -> Vector2 -> SVGElem
 eigenvectorLine (Vector2 x0 y0) (Vector2 x1 y1) =
@@ -24,22 +30,24 @@ constraintLine (Vector2 x0 y0) (Vector2 x1 y1) =
 constraintCircle :: Vector2 -> SVGElem
 constraintCircle (Vector2 x0 y0) = Circle x0 y0 0.5 "red" 0.1
 
-type TensorField = V2.Vector2 -> Tensor
+-- Data Definition 
 
+type TensorField = V2.Vector2 -> Tensor
 type VectorField = V2.Vector2 -> V2.Vector2
 
+-- combines the basis fields produced by the set of constraints into a
+-- single tensor field
 makeTensorField :: [Constraint] -> TensorField
 makeTensorField [] _ = T.trivial
 makeTensorField cs p = T.sum (map (basisFieldAtPoint p) cs)
 
+-- as defined in Wonka for radial and linear constraints
 basisFieldAtPoint :: Vector2 -> Constraint -> Tensor
 basisFieldAtPoint pos constraint =
-  let cpos = case constraint of (Linear cp _ _) -> cp
-                                (Radial cp)     -> cp
-      k = exp (-1 * decayConstant * V2.sqMag (V2.sub pos cpos))
+  let k = exp (-1 * decayConstant * V2.sqMag (V2.sub pos (posn constraint)))
       Vector2 xp yp = pos
       vector = case constraint of
-                (Linear _ cdir cmag)  -> T.fromRTheta cmag cdir
+                (Linear _ cdir cmag)  	 -> T.fromRTheta cmag cdir
                 (Radial (Vector2 x0 y0)) -> T.fromXY (xp - x0) (yp - y0)
   in T.scalarTimes k vector
 
@@ -48,6 +56,8 @@ tensorfieldEigenvectors tf =
   let tfEv p = T.eigenvectors (tf p)
   in (fst . tfEv, snd . tfEv)
 
+-- produces a list of n streamlines for a given vector and a vectorfield,
+-- step and len are lengths such that n * step = len
 traceStreamline :: VectorField -> Vector2 -> Float -> Float -> [Vector2]
 traceStreamline vf p0 step len =
   let mkStep ps     0 = ps
@@ -63,14 +73,15 @@ traceStreamline vf p0 step len =
                      else mkStep ((p',v'):(p,vlast):pvls) (n - 1)
   in map fst (mkStep [(p0, vf p0)] (len / step))
 
+-- produces an SVG to draw a standard [res x res] tensor field and the 
+-- given constraints
 plotTensorField :: TensorField -> [Constraint] -> Float -> SVG
 plotTensorField tf cs res =
-  let samplePts      = [ V2.Vector2 vx vy | vx<-[1..res], vy<-[1..res] ]
-      majorEvs       = map (fst (tensorfieldEigenvectors tf)) samplePts
-      scaledMajorEvs = map (V2.scalarTimes 0.5 . V2.unit) majorEvs
-      plotVectors  = zip samplePts scaledMajorEvs
-      mkVecLine (p, ev) =
-        eigenvectorLine p (V2.add p ev)
+  let samplePts         = [ V2.Vector2 vx vy | vx<-[1..res], vy<-[1..res] ]
+      majorEvs          = map (fst (tensorfieldEigenvectors tf)) samplePts
+      scaledMajorEvs    = map (V2.scalarTimes 0.5 . V2.unit) majorEvs
+      plotVectors       = zip samplePts scaledMajorEvs
+      mkVecLine (p, ev) = eigenvectorLine p (V2.add p ev)
       mkCons (Linear cp cdir cmag) =
         let cx = cmag * cos cdir
             cy = cmag * sin cdir
