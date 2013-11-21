@@ -33,3 +33,7 @@ sqMag (Vector2 a b) = a*a + b*b
 isReal :: Vector2 -> Bool
 isReal (Vector2 a b) = not (Prelude.isNaN a || Prelude.isNaN b) &&
                        not (isInfinite a || isInfinite b)
+
+inBounds :: Vector2 -> Vector2 -> Vector2 -> Bool
+inBounds (Vector2 x y) (Vector2 x0 y0) (Vector2 x1 y1) =
+  (x0 <= x) && (x <= x1) && (y0 <= y) && (y <= y1) 

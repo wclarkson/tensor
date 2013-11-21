@@ -8,6 +8,7 @@ import qualified Vector2 as V2
 -- where R >= 0 and theta is [0, 2pi)
 data Tensor = Tensor { a :: Float, b :: Float, d :: Float }
 
+
 trivial :: Tensor
 trivial = Tensor 0 0 0
 

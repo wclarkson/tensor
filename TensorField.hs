@@ -58,35 +58,38 @@ tensorfieldEigenvectors tf =
 
 -- produces a list of n streamlines for a given vector and a vectorfield,
 -- step and len are lengths such that n * step = len
-traceStreamline :: VectorField -> Vector2 -> Float -> Float -> [Vector2]
-traceStreamline vf p0 step len =
+traceStreamline :: VectorField -> Float -> Float -> Vector2 -> Float -> Float -> [Vector2]
+traceStreamline vf w h p0 step len =
   let mkStep ps     0 = ps
       mkStep []     _ = []
       mkStep ((p,vlast):pvls) n =
-        let v     = vf p
-            v'    = if V2.dot v vlast > 0 then v
+        let v       = vf p
+            v'      = if V2.dot v vlast > 0 then v
                                          else V2.scalarTimes (-1) v
-            cycle = (V2.mag (V2.sub p p0) < cycleThreshold) &&
+            cycle   = (V2.mag (V2.sub p p0) < cycleThreshold) &&
                     (len - ((n+10) * step)) > cycleThreshold
-            p'    = V2.add p (V2.scalarTimes step (V2.unit v'))
-        in  if cycle then mkStep ((p0,vlast):(p,vlast):pvls) 0
-                     else mkStep ((p',v'):(p,vlast):pvls) (n - 1)
+            inBound = V2.inBounds p V2.zero (V2.Vector2 w h)
+            p'      = V2.add p (V2.scalarTimes step (V2.unit v'))
+        in if inBound then if cycle then mkStep ((p0,vlast):(p,vlast):pvls) 0
+                                    else mkStep ((p',v'):(p,vlast):pvls) (n - 1)
+                      else mkStep ((p',v'):(p,vlast):pvls) 0
   in map fst (mkStep [(p0, vf p0)] (len / step))
 
 -- produces an SVG to draw a standard [res x res] tensor field and the 
 -- given constraints
-plotTensorField :: TensorField -> [Constraint] -> Float -> SVG
-plotTensorField tf cs res =
-  let samplePts         = [ V2.Vector2 vx vy | vx<-[1..res], vy<-[1..res] ]
-      majorEvs          = map (fst (tensorfieldEigenvectors tf)) samplePts
-      scaledMajorEvs    = map (V2.scalarTimes 0.5 . V2.unit) majorEvs
-      plotVectors       = zip samplePts scaledMajorEvs
-      mkVecLine (p, ev) = eigenvectorLine p (V2.add p ev)
+plotTensorField :: TensorField -> [Constraint] -> Float -> Float -> SVG
+plotTensorField tf cs w h =
+  let samplePts      = [ V2.Vector2 vx vy | vx<-[1..w], vy<-[1..h] ]
+      majorEvs       = map (fst (tensorfieldEigenvectors tf)) samplePts
+      scaledMajorEvs = map (V2.scalarTimes 0.5 . V2.unit) majorEvs
+      plotVectors  = zip samplePts scaledMajorEvs
+      mkVecLine (p, ev) =
+        eigenvectorLine p (V2.add p ev)
       mkCons (Linear cp cdir cmag) =
         let cx = cmag * cos cdir
             cy = cmag * sin cdir
         in constraintLine cp (V2.add cp (V2.Vector2 cx cy))
       mkCons (Radial cp) = constraintCircle cp
-  in SVG res res (map mkVecLine plotVectors ++ map mkCons cs)
+  in SVG w h (map mkVecLine plotVectors ++ map mkCons cs)
 
 
