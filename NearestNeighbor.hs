@@ -2,6 +2,7 @@ module NearestNeighbor where
 
 import qualified Data.Vector as V
 import Data.Vector ((//), (!))
+import Debug.Trace
 
 data Point = Point Float Float deriving Show
 {-}
@@ -22,8 +23,8 @@ instance NearestNeighbor a where
                                xsize   :: Float, ysize  :: Float,
                                buckets :: V.Vector (V.Vector [(Point, a)]) }
                                deriving Show
-  new      = bucketsNew
-  insert   = bucketsInsert
+  new    = bucketsNew
+  insert = bucketsInsert
   lookup = bucketsLookup
 
 bucketsNew :: Float -> Float -> Int -> Storage a
@@ -51,9 +52,9 @@ bucketsLookup (Buckets w h xsize ysize v) (Point x y) =
   let bx = floor (x / xsize)
       by = floor (y / ysize)
       n = floor $ w / xsize
-      points = [(bx+a,by+b) | a<-[-1,1], b<-[-1,1]]
-      getBucket (a, b) = if not $ (a >= 0)     && (b >= 0) && 
-                                  (a <= n) && (b <= n)
+      points = [(bx+a,by+b) | a<-[-1..1], b<-[-1..1]]
+      getBucket (a, b) = if not ((a >= 0)     && (b >= 0) && 
+                                  (a <= n) && (b <= n))
                          then [] else (v ! a) ! b
       blist = foldl (\lp p -> getBucket p ++ lp) [] points
       dist (Point a b) = (a-x)*(a-x) + (b-y)*(b-y)
@@ -62,5 +63,10 @@ bucketsLookup (Buckets w h xsize ysize v) (Point x y) =
       argmin f (n:ns) = if f n < f s then n else s
         where s = argmin f ns
   in case blist of [] -> Nothing
-                   _  -> Just $ argmin (dist . fst) blist
+                         _  -> Just $ argmin (dist . fst) blist
 
+b  = new 10 10 4
+b' = NearestNeighbor.insert b (Point 0 0,"nutz")
+
+main :: IO ()
+main = putStrLn (show (NearestNeighbor.lookup b' (Point 0 0)))
