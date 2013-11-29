@@ -5,11 +5,6 @@ import Data.Vector ((//), (!))
 import Debug.Trace
 
 data Point = Point Float Float deriving Show
-{-}
-data (Storage a) = Buckets { width   :: Float, height :: Float,
-                             xsize   :: Float, ysize  :: Float,
-                             buckets :: V.Vector (V.Vector [(Point, a)]) }
-                             -}
 
 class NearestNeighbor a where
   data (Storage a)
