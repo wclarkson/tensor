@@ -1,7 +1,8 @@
 FLAGS=-Wall -Werror -fno-warn-name-shadowing
+EXTRAFLAGS=-XTypeFamilies -XFlexibleInstances
 
 main: Main.hs
-	ghc ${FLAGS} Main.hs
+	ghc ${FLAGS} ${EXTRAFLAGS} Main.hs
 	./Main > test.svg
 
 nowarn:

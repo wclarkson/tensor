@@ -6,6 +6,7 @@ import qualified Vector2 as V2
 import Vector2 (Vector2 (Vector2))
 import Constraint
 import SVGWriter
+import NearestNeighbor
 
 -- many calculations are described in
 -- Wonka: {http://peterwonka.net/Publications/pdfs/2008.SG.Chen.
@@ -30,7 +31,7 @@ constraintLine (Vector2 x0 y0) (Vector2 x1 y1) =
 constraintCircle :: Vector2 -> SVGElem
 constraintCircle (Vector2 x0 y0) = Circle x0 y0 0.5 "red" 0.1
 
--- Data Definition 
+-- Data Definition
 
 type TensorField = V2.Vector2 -> Tensor
 type VectorField = V2.Vector2 -> V2.Vector2
@@ -56,7 +57,7 @@ tensorfieldEigenvectors tf =
   let tfEv p = T.eigenvectors (tf p)
   in (fst . tfEv, snd . tfEv)
 
--- produces a list of n streamlines for a given vector and a vectorfield,
+-- produces a streamline for a given vector and a vectorfield,
 -- step and len are lengths such that n * step = len
 traceStreamline :: VectorField -> Float -> Float -> Vector2 -> Float -> Float -> [Vector2]
 traceStreamline vf w h p0 step len =
@@ -75,7 +76,17 @@ traceStreamline vf w h p0 step len =
                       else mkStep ((p',v'):(p,vlast):pvls) 0
   in map fst (mkStep [(p0, vf p0)] (len / step))
 
--- produces an SVG to draw a standard [res x res] tensor field and the 
+-- I wasn't sure what 'a' to throw in the nearest neighbor construct, so
+-- I put 0 and had it inherit from Num
+addStreamlineToNearestNeighbor :: (Num a) => [Vector2] -> Storage a -> Storage a
+addStreamlineToNearestNeighbor vectors stor = foldr ins stor vectors
+  where ins = \(Vector2 x y) st -> NearestNeighbor.insert st (Point x y, 0)
+
+newNearestNeighborFromStreamlines :: (Num a) => [[Vector2]] -> Float -> Float -> Int -> Storage a
+newNearestNeighborFromStreamlines v2list w h nbux =
+    foldr addStreamlineToNearestNeighbor (NearestNeighbor.new w h nbux) v2list
+
+-- produces an SVG to draw a standard [res x res] tensor field and the
 -- given constraints
 plotTensorField :: TensorField -> [Constraint] -> Float -> Float -> SVG
 plotTensorField tf cs w h =

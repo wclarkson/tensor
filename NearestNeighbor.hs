@@ -2,7 +2,6 @@ module NearestNeighbor where
 
 import qualified Data.Vector as V
 import Data.Vector ((//), (!))
-import Debug.Trace
 
 data Point = Point Float Float deriving Show
 
@@ -43,7 +42,7 @@ bucketsInsert (Buckets w h xsize ysize buckets) (Point px py, v) =
 
 -- bucketsLookup has not been thoroughly tested
 bucketsLookup :: Storage a -> Point -> Maybe (Point, a)
-bucketsLookup (Buckets w h xsize ysize v) (Point x y) =
+bucketsLookup (Buckets w _ xsize ysize v) (Point x y) =
   let bx = floor (x / xsize)
       by = floor (y / ysize)
       n = floor $ w / xsize
@@ -54,7 +53,7 @@ bucketsLookup (Buckets w h xsize ysize v) (Point x y) =
       blist = foldl (\lp p -> getBucket p ++ lp) [] points
       dist (Point a b) = (a-x)*(a-x) + (b-y)*(b-y)
       argmin _ [] = error "argmin passed empty list"
-      argmin f (n:[]) = n
+      argmin _ (n:[]) = n
       argmin f (n:ns) = if f n < f s then n else s
         where s = argmin f ns
   in case blist of [] -> Nothing
