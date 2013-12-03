@@ -3,6 +3,7 @@ import TensorField
 import Constraint
 import Vector2
 import SVGWriter
+import NearestNeighbor (Storage, Point (Point))
 import qualified NearestNeighbor as NN
 
 cs :: [Constraint]
@@ -17,16 +18,22 @@ fieldHeight = 20
 tf :: TensorField
 tf = makeTensorField cs
 
-traceLine :: Vector2 -> SVGElem
-traceLine v =
-  let mEvs     = fst (tensorfieldEigenvectors tf)
-      nn       = NN.new 10 10 4
-      tracePts = traceStreamline mEvs nn fieldWidth fieldHeight v 0.01 75
-      vecToPair (Vector2 vx vy) = (vx, vy)
+-- the vector2 arg is a seed point
+traceLine :: Vector2 -> Vector2 -> [Vector2] -> SVGElem
+traceLine mEvs tracePts =
+  let vecToPair (Vector2 vx vy) = (vx, vy)
   in Polyline (map vecToPair tracePts) "green" 0.1
 
+traceMultipleLines :: (Num a) => [Vector2] -> Storage a -> [SVGElem]
+traceMultipleLines []           nn = []
+traceMultipleLines (seed:seeds) nn =
+    let mEvs     = fst (tensorfieldEigenvectors tf)
+        tracePts = traceStreamline mEvs nn fieldWidth fieldHeight seed 0.01 75
+        nn'   = addStreamlineToNN tracePts nn
+    in (traceLine mEvs tracePts seed):(traceMultipleLines seeds nn')
+
 traceLines :: [SVGElem]
-traceLines = [traceLine (Vector2 15 15)]
+traceLines = traceMultipleLines [(Vector2 15 15), (Vector2 0 0)]
   --map traceLine [ Vector2 5 ty | ty<-[10..15] ]
 
 main :: IO ()

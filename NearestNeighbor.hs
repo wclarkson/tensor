@@ -7,8 +7,8 @@ data Point = Point Float Float deriving Show
 
 class NearestNeighbor a where
   data (Storage a)
-  new      :: Float -> Float -> Int -> Storage a
-  insert   :: Storage a -> (Point, a) -> Storage a
+  new    :: Float -> Float -> Int -> Storage a
+  insert :: Storage a -> (Point, a) -> Storage a
   lookup :: Storage a -> Point -> Maybe (Point, a)
 
 
@@ -47,8 +47,8 @@ bucketsLookup (Buckets w _ xsize ysize v) (Point x y) =
       by = floor (y / ysize)
       n = floor $ w / xsize
       points = [(bx+a,by+b) | a<-[-1..1], b<-[-1..1]]
-      getBucket (a, b) = if not ((a >= 0)     && (b >= 0) &&
-                                  (a <= n) && (b <= n))
+      getBucket (a, b) = if not ((a >= 0) && (b >= 0) &&
+                                  (a < n) && (b < n))
                          then [] else (v ! a) ! b
       blist = foldl (\lp p -> getBucket p ++ lp) [] points
       dist (Point a b) = (a-x)*(a-x) + (b-y)*(b-y)
