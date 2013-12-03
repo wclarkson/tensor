@@ -1,12 +1,12 @@
 FLAGS=-Wall -Werror -fno-warn-name-shadowing
-EXTRAFLAGS=-XTypeFamilies -XFlexibleInstances
+EXTRAFLAGS=-XTypeFamilies -XFlexibleInstances -fno-warn-name-shadowing
 
 main: Main.hs
 	ghc ${FLAGS} ${EXTRAFLAGS} Main.hs
 	./Main > test.svg
 
 nowarn:
-	ghc Main.hs
+	ghc ${EXTRAFLAGS} Main.hs
 	./Main > test.svg
 
 test: Test_Tensor Test_TensorField

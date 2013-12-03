@@ -6,7 +6,8 @@ import qualified Vector2 as V2
 import Vector2 (Vector2 (Vector2))
 import Constraint
 import SVGWriter
-import NearestNeighbor
+import NearestNeighbor (Storage, Point (Point))
+import qualified NearestNeighbor as NN
 
 -- many calculations are described in
 -- Wonka: {http://peterwonka.net/Publications/pdfs/2008.SG.Chen.
@@ -59,11 +60,12 @@ tensorfieldEigenvectors tf =
 
 -- produces a streamline for a given vector and a vectorfield,
 -- step and len are lengths such that n * step = len
-traceStreamline :: VectorField -> Float -> Float -> Vector2 -> Float -> Float -> [Vector2]
-traceStreamline vf w h p0 step len =
-  let mkStep ps     0 = ps
-      mkStep []     _ = []
-      mkStep ((p,vlast):pvls) n =
+traceStreamline ::
+  VectorField -> Storage a -> Float -> Float -> Vector2 -> Float -> Float -> [Vector2]
+traceStreamline vf nn w h p0 step len =
+  let mkStep ps     _     0 = ps
+      mkStep []     _     _ = []
+      mkStep (p:ps) vlast n =
         let v       = vf p
             v'      = if V2.dot v vlast > 0 then v
                                          else V2.scalarTimes (-1) v
@@ -71,20 +73,23 @@ traceStreamline vf w h p0 step len =
                     (len - ((n+10) * step)) > cycleThreshold
             inBound = V2.inBounds p V2.zero (V2.Vector2 w h)
             p'      = V2.add p (V2.scalarTimes step (V2.unit v'))
-        in if inBound then if cycle then mkStep ((p0,vlast):(p,vlast):pvls) 0
-                                    else mkStep ((p',v'):(p,vlast):pvls) (n - 1)
-                      else mkStep ((p',v'):(p,vlast):pvls) 0
-  in map fst (mkStep [(p0, vf p0)] (len / step))
+            output | not inBound = mkStep (p':p:ps) v' 0
+                   | cycle       = mkStep (p0:p:ps) vlast 0
+                   | otherwise   = mkStep (p':p:ps) v' (n - 1) 
+          in output
+      traceLine dir = mkStep [p0] (V2.scalarTimes dir (vf p0)) (len / step)
+  in traceLine 1 ++ reverse (traceLine (-1))
 
 -- I wasn't sure what 'a' to throw in the nearest neighbor construct, so
 -- I put 0 and had it inherit from Num
-addStreamlineToNearestNeighbor :: (Num a) => [Vector2] -> Storage a -> Storage a
-addStreamlineToNearestNeighbor vectors stor = foldr ins stor vectors
-  where ins = \(Vector2 x y) st -> NearestNeighbor.insert st (Point x y, 0)
+addStreamlineToNN :: (Num a) => [Vector2] -> Storage a -> Storage a
+addStreamlineToNN vectors stor = foldr ins stor vectors
+  where ins (Vector2 x y) st = NN.insert st (Point x y, 0)
 
-newNearestNeighborFromStreamlines :: (Num a) => [[Vector2]] -> Float -> Float -> Int -> Storage a
-newNearestNeighborFromStreamlines v2list w h nbux =
-    foldr addStreamlineToNearestNeighbor (NearestNeighbor.new w h nbux) v2list
+newNNFromStreamlines ::
+  (Num a) => [[Vector2]] -> Float -> Float -> Int -> Storage a
+newNNFromStreamlines v2list w h nbux =
+    foldr addStreamlineToNN (NN.new w h nbux) v2list
 
 -- produces an SVG to draw a standard [res x res] tensor field and the
 -- given constraints
