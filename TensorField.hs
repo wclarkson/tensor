@@ -22,7 +22,7 @@ decayConstant = 0.10
 cycleThreshold :: Float
 cycleThreshold = 0.1
 dSep :: Float
-dSep = 1.5
+dSep = 0.15
 
 -- Drawing Specs
 
@@ -81,12 +81,13 @@ traceStreamline vf nn0 w h p0 step len =
             vec2  (Point x y) = (V2.Vector2 x y)
             lookup  = NN.lookup nn0 (point v)
             iSect   = case lookup of
-                        (Just (nearest, _)) -> V2.mag (V2.sub (vec2 nearest) p) < dSep
+                        (Just (nearest, _)) -> 
+                          V2.mag (V2.sub (vec2 nearest) p) < dSep
                         Nothing             -> False
             p'      = V2.add p (V2.scalarTimes step (V2.unit v'))
             output | not inBound = mkStep (p':p:ps) v' 0
                    | cycle       = mkStep (p0:p:ps) vlast 0
-                   | iSect       = trace ((show $ fst $ fromJust lookup) ++ (show p)) mkStep ((vec2 $ fst $ fromJust lookup):p:ps) v' 0
+                   | iSect       = mkStep ((vec2 $ fst $ fromJust lookup):p:ps) v' 0
                    | otherwise   = mkStep (p':p:ps) v' (n - 1)
           in output
       traceLine dir = mkStep [p0] (V2.scalarTimes dir (vf p0)) (len / step)

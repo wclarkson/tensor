@@ -27,23 +27,19 @@ tf :: TensorField
 tf = makeTensorField cs
 
 traceMajorLine :: Vector2 -> SVGElem
-traceMajorLine v =
-  let mEvs     = fst (tensorfieldEigenvectors tf)
-      nn      = NN.new fieldWidth fieldHeight 5
-      tracePts = traceStreamline mEvs nn fieldWidth fieldHeight v 0.01 75
-      vecToPair (Vector2 vx vy) = (vx, vy)
-  in Polyline (map vecToPair tracePts) "green" 0.1
+traceMajorLine v = traceLine "green" fst v
 
---traceLines :: [SVGElem]
---traceLines = [traceLine (Vector2 15 15)]
-  --map traceLine [ Vector2 5 ty | ty<-[10..15] ]
 traceMinorLine :: Vector2 -> SVGElem
-traceMinorLine v =
-  let mEvs     = snd (tensorfieldEigenvectors tf)
+traceMinorLine v = traceLine "blue" snd v
+
+traceLine ::
+  String -> ((VectorField, VectorField) -> VectorField) -> Vector2 -> SVGElem
+traceLine color which v =
+  let mEvs     = which (tensorfieldEigenvectors tf)
       nn       = NN.new fieldWidth fieldHeight 5
       tracePts = traceStreamline mEvs nn fieldWidth fieldHeight v 0.01 75
       vecToPair (Vector2 vx vy) = (vx, vy)
-  in Polyline (map vecToPair tracePts) "blue" 0.1
+  in Polyline (map vecToPair tracePts) color 0.1
 
 randomSeeds :: [Vector2]
 randomSeeds =
