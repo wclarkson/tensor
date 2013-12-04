@@ -3,6 +3,8 @@ module NearestNeighbor where
 import qualified Data.Vector as V
 import Data.Vector ((//), (!))
 
+import Debug.Trace
+
 data Point = Point Float Float deriving Show
 
 class NearestNeighbor a where
@@ -31,7 +33,8 @@ bucketsNew width height nbuckets =
 bucketsInsert :: Storage a -> (Point, a) -> Storage a
 bucketsInsert (Buckets w h xsize ysize buckets) (Point px py, v) =
   if not $ (px >= 0) && (py >= 0) && (px < w) && (py < h)
-    then error "bounds"
+--    then trace (show px ++ " " ++ show py) error "bounds"
+    then trace "madness!" (Buckets w h xsize ysize buckets)
     else let x     = floor (px / xsize)
              y     = floor (py / ysize)
              point = (Point px py, v)
