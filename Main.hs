@@ -1,7 +1,7 @@
 import Tensor
 import TensorField
 import Constraint
-import Vector2
+import Vector2 (Vector2 (Vector2))
 import SVGWriter
 import NearestNeighbor (Storage)
 import qualified NearestNeighbor as NN
@@ -21,6 +21,12 @@ cs = [ --Radial (Vector2 10 10),
        Linear (Vector2 6 14) 0.6  3,
        Linear (Vector2 8 8)  1.2  3 ]
 
+cs' :: [Constraint]
+cs' = [ Linear (Vector2 10 15) 0.0 3,
+        Linear (Vector2 15 10) 1.3 3]
+
+type Seed = Vector2
+
 fieldWidth :: Float
 fieldWidth = 20
 fieldHeight :: Float
@@ -33,19 +39,23 @@ emptyNN :: Storage a
 emptyNN = NN.new fieldWidth fieldHeight 4
 
 {-}
-traceMajorLine :: Vector2 -> SVGElem
-traceMajorLine v =
-  let mEvs     = fst (tensorfieldEigenvectors tf)
-      nn       = NN.new 10 10 4
-      tracePts = traceStreamline mEvs nn fieldWidth fieldHeight v 0.01 75
-      vecToPair (Vector2 vx vy) = (vx, vy)
-  in Polyline (map vecToPair tracePts) "green" 0.1
+traceMajorLine :: (Num a) => Vector2 -> NN.Storage a -> (SVGElem, NN.Storage a)
+traceMajorLine v = traceLine "green" fst v
 
-traceMinorLine :: Vector2 -> SVGElem
-traceMinorLine v =
-  let mEvs     = snd (tensorfieldEigenvectors tf)
-      nn       = NN.new 10 10 4
-      tracePts = traceStreamline mEvs nn fieldWidth fieldHeight v 0.01 75
+traceMinorLine :: (Num a) => Vector2 -> NN.Storage a -> (SVGElem, NN.Storage a)
+traceMinorLine v = traceLine "blue" snd v
+
+getStreamline :: (Num a) => ((VectorField, VectorField) -> VectorField) -> 
+  NN.Storage a -> Vector2 -> [Vector2]
+getStreamline which nn v = 
+  let mEvs     = which (tensorfieldEigenvectors tf)
+  in  traceStreamline mEvs nn fieldWidth fieldHeight v 0.01 75
+
+traceLine :: (Num a) => String -> ((VectorField, VectorField) -> VectorField) 
+  -> Vector2 -> NN.Storage a -> (SVGElem, NN.Storage a)
+traceLine color which v nn =
+  let tracePts = getStreamline which nn v
+      nn'      = foldr (flip NN.insert) nn (map (\p -> (p, 0)) tracePts)
       vecToPair (Vector2 vx vy) = (vx, vy)
   in Polyline (map vecToPair tracePts) "blue" 0.1
   -}
@@ -133,13 +143,20 @@ placeStreamlines tf nn n Improved =
 
 traceLines :: [SVGElem]
 traceLines = map drawStreamline $ placeStreamlines tf emptyNN 1 Improved
-
---traceLines = (map traceMajorLine randomSeeds) ++ (map traceMinorLine randomSeeds)
-
---traceLines = (map traceMajorLine [ Vector2 5 ty | ty<-[0,2..20] ])
---          ++ (map traceMinorLine [ Vector2 tx 5 | tx<-[0,2..20] ])
+{-}
+traceLines = 
+  let gatherMajor (elems, nn) v = (elem:elems, nn')
+        where (elem, nn') = traceMajorLine v nn
+      gatherMinor (elems, nn) v = (elem:elems, nn')
+        where (elem, nn') = traceMinorLine v nn
+      nn0          = NN.new fieldWidth fieldHeight 5
+      (majElems, _) = foldl gatherMajor ([], nn0) randomSeeds
+      (minElems, _) = foldl gatherMinor ([], nn0) randomSeeds
+  in majElems ++ minElems
+  -}
 
 main :: IO ()
 main = putStrLn (writeSVG
-                  (appendElements (plotTensorField tf cs fieldWidth fieldHeight)
+                  (appendElements
+                  (plotTensorField tf cs fieldWidth fieldHeight)
                   traceLines))
