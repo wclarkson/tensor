@@ -6,6 +6,8 @@ import SVGWriter
 import qualified NearestNeighbor as NN
 import System.Random
 
+import Debug.Trace
+
 cs :: [Constraint]
 cs = [ --Radial (Vector2 10 10),
        Linear (Vector2 2 2)  0.01 3,
@@ -26,20 +28,25 @@ fieldHeight = 20
 tf :: TensorField
 tf = makeTensorField cs
 
-traceMajorLine :: Vector2 -> SVGElem
+traceMajorLine :: (Num a) => Vector2 -> NN.Storage a -> (SVGElem, NN.Storage a)
 traceMajorLine v = traceLine "green" fst v
 
-traceMinorLine :: Vector2 -> SVGElem
+traceMinorLine :: (Num a) => Vector2 -> NN.Storage a -> (SVGElem, NN.Storage a)
 traceMinorLine v = traceLine "blue" snd v
 
-traceLine ::
-  String -> ((VectorField, VectorField) -> VectorField) -> Vector2 -> SVGElem
-traceLine color which v =
+getStreamline :: (Num a) => ((VectorField, VectorField) -> VectorField) -> 
+  NN.Storage a -> Vector2 -> [Vector2]
+getStreamline which nn v = 
   let mEvs     = which (tensorfieldEigenvectors tf)
-      nn       = NN.new fieldWidth fieldHeight 5
-      tracePts = traceStreamline mEvs nn fieldWidth fieldHeight v 0.01 75
+  in  traceStreamline mEvs nn fieldWidth fieldHeight v 0.01 75
+
+traceLine :: (Num a) => String -> ((VectorField, VectorField) -> VectorField) 
+  -> Vector2 -> NN.Storage a -> (SVGElem, NN.Storage a)
+traceLine color which v nn =
+  let tracePts = getStreamline which nn v
+      nn'      = foldr (flip NN.insert) nn (map (\p -> (p, 0)) tracePts)
       vecToPair (Vector2 vx vy) = (vx, vy)
-  in Polyline (map vecToPair tracePts) color 0.1
+  in (Polyline (map vecToPair tracePts) color 0.1, nn')
 
 randomSeeds :: [Vector2]
 randomSeeds =
@@ -49,7 +56,15 @@ randomSeeds =
   in take 10 (map (uncurry Vector2) (zip xs ys))
 
 traceLines :: [SVGElem]
-traceLines = (map traceMajorLine randomSeeds)++(map traceMinorLine randomSeeds)
+traceLines = 
+  let gatherMajor (elems, nn) v = (elem:elems, nn')
+        where (elem, nn') = traceMajorLine v nn
+      gatherMinor (elems, nn) v = (elem:elems, nn')
+        where (elem, nn') = traceMinorLine v nn
+      nn0          = NN.new fieldWidth fieldHeight 5
+      (majElems, _) = foldl gatherMajor ([], nn0) randomSeeds
+      (minElems, _) = foldl gatherMinor ([], nn0) randomSeeds
+  in majElems ++ minElems
 
 main :: IO ()
 main = putStrLn (writeSVG

@@ -22,7 +22,7 @@ decayConstant = 0.10
 cycleThreshold :: Float
 cycleThreshold = 0.1
 dSep :: Float
-dSep = 0.15
+dSep = 1.0
 
 -- Drawing Specs
 
@@ -71,22 +71,21 @@ traceStreamline vf nn0 w h p0 step len =
   let mkStep ps     _     0 = ps
       mkStep []     _     _ = []
       mkStep (p:ps) vlast n =
-        let v       = vf p
-            v'      = if V2.dot v vlast > 0 then v
-                                         else V2.scalarTimes (-1) v
+        let dir     = vf p
+            dir'      = if V2.dot dir vlast > 0 then dir
+                                         else V2.scalarTimes (-1) dir
             cycle   = (V2.mag (V2.sub p p0) < cycleThreshold) &&
                     (len - ((n+10) * step)) > cycleThreshold
             inBound = V2.inBounds p V2.zero (V2.Vector2 w h)
-            lookup  = NN.lookup nn0 v
+            lookup  = NN.lookup nn0 p
             iSect   = case lookup of
-                        (Just (nearest, _)) -> 
-                          V2.mag (V2.sub nearest p) < dSep
+                        (Just (nearest, _)) -> V2.mag (V2.sub nearest p) < dSep
                         Nothing             -> False
-            p'      = V2.add p (V2.scalarTimes step (V2.unit v'))
-            output | not inBound = mkStep (p':p:ps) v' 0
+            p'      = V2.add p (V2.scalarTimes step (V2.unit dir'))
+            output | not inBound = mkStep (p':p:ps) dir' 0
                    | cycle       = mkStep (p0:p:ps) vlast 0
-                   | iSect       = mkStep ((fst $ fromJust lookup):p:ps) v' 0
-                   | otherwise   = mkStep (p':p:ps) v' (n - 1)
+                   | iSect       = mkStep ((fst $ fromJust lookup):p:ps) dir' 0
+                   | otherwise   = mkStep (p':p:ps) dir' (n - 1)
           in output
       traceLine dir = mkStep [p0] (V2.scalarTimes dir (vf p0)) (len / step)
   in traceLine 1 ++ reverse (traceLine (-1))

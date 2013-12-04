@@ -54,7 +54,7 @@ bucketsInsert (Buckets w h xsize ysize buckets) (V2.Vector2 px py, v) =
              cols'  = buckets // [(y, row')]
          in Buckets w h xsize ysize cols'
 
--- bucketsLookup has not been thoroughly tested
+-- bucketsLookup has been somewhat thoroughly tested
 bucketsLookup :: Storage a -> V2.Vector2 -> Maybe (V2.Vector2, a)
 bucketsLookup (Buckets w _ xsize ysize v) (V2.Vector2 x y) =
   let bx = floor (x / xsize)
