@@ -2,6 +2,7 @@ module NearestNeighbor where
 
 import qualified Data.Vector as V
 import Data.Vector ((//), (!))
+import qualified Util
 
 data Point = Point Float Float deriving Show
 
@@ -65,9 +66,5 @@ bucketsLookup (Buckets w _ xsize ysize v) (Point x y) =
                          then [] else (v ! a) ! b
       blist = foldl (\lp p -> getBucket p ++ lp) [] points
       dist (Point a b) = (a-x)*(a-x) + (b-y)*(b-y)
-      argmin _ [] = error "argmin passed empty list"
-      argmin _ (n:[]) = n
-      argmin f (n:ns) = if f n < f s then n else s
-        where s = argmin f ns
   in case blist of [] -> Nothing
-                   _  -> Just $ argmin (dist . fst) blist
+                   _  -> Just $ Util.argmin (dist . fst) blist
