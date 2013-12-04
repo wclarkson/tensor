@@ -6,7 +6,7 @@ import qualified Vector2 as V2
 import Vector2 (Vector2 (Vector2))
 import Constraint
 import SVGWriter
-import NearestNeighbor (Storage, Point (Point))
+import NearestNeighbor (Storage)
 import qualified NearestNeighbor as NN
 
 import Data.Maybe
@@ -77,17 +77,15 @@ traceStreamline vf nn0 w h p0 step len =
             cycle   = (V2.mag (V2.sub p p0) < cycleThreshold) &&
                     (len - ((n+10) * step)) > cycleThreshold
             inBound = V2.inBounds p V2.zero (V2.Vector2 w h)
-            point (V2.Vector2 x y) = (Point x y) -- this function is the best
-            vec2  (Point x y) = (V2.Vector2 x y)
-            lookup  = NN.lookup nn0 (point v)
+            lookup  = NN.lookup nn0 v
             iSect   = case lookup of
                         (Just (nearest, _)) -> 
-                          V2.mag (V2.sub (vec2 nearest) p) < dSep
+                          V2.mag (V2.sub nearest p) < dSep
                         Nothing             -> False
             p'      = V2.add p (V2.scalarTimes step (V2.unit v'))
             output | not inBound = mkStep (p':p:ps) v' 0
                    | cycle       = mkStep (p0:p:ps) vlast 0
-                   | iSect       = mkStep ((vec2 $ fst $ fromJust lookup):p:ps) v' 0
+                   | iSect       = mkStep ((fst $ fromJust lookup):p:ps) v' 0
                    | otherwise   = mkStep (p':p:ps) v' (n - 1)
           in output
       traceLine dir = mkStep [p0] (V2.scalarTimes dir (vf p0)) (len / step)
@@ -97,7 +95,7 @@ traceStreamline vf nn0 w h p0 step len =
 -- I put 0 and had it inherit from Num
 addStreamlineToNN :: (Num a) => [Vector2] -> Storage a -> Storage a
 addStreamlineToNN vectors stor = foldr ins stor vectors
-  where ins (Vector2 x y) st = NN.insert st (Point x y, 0)
+  where ins (Vector2 x y) st = NN.insert st (V2.Vector2 x y, 0)
 
 --newNNFromStreamlines ::
 --  (Num a) => [[Vector2]] -> Float -> Float -> Int -> Storage a
