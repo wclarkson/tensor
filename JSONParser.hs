@@ -1,46 +1,35 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, DeriveGeneric, NamedFieldPuns #-}
 
 module JSONParser
 where
 
-import Vector2
-import Control.Applicative
-import Control.Monad
 import Data.Aeson
+import GHC.Generics
+import System.Environment
+import qualified Data.ByteString.Lazy as B
+import Constraint
+import Vector2
 
 data Input = Input
            {
             tycon :: String,
-            posn  :: Vector2,
+            posx  :: Float,
+            posy  :: Float,
             dir   :: Float,
             mag   :: Float
-           }
+           } deriving (Show, Generic)
 
-instance FromJSON Input where
-    parseJSON (Object v) =
-      Input <$> v .: "tycon"
-            <*> v .: "posn"
-            <*> v .: "dir"
-            <*> v .: "mag"
-      -- A non-Object value is of the wrong type, so use mzero to fail.
-    parseJSON _          = mzero
+instance FromJSON Input
+instance ToJSON Input
 
-instance ToJSON Input where
-    toJSON (Input tycon posn dir mag) =
-      object [ "tycon" .= tycon
-             , "posn"  .= posn
-             , "dir"   .= dir
-             , "mag"   .= mag
-             ]
+contentsOfArgv1 :: IO B.ByteString
+contentsOfArgv1 = do
+  a <- getArgs
+  if length a /= 1 then error "No input file"
+                   else B.readFile (a !! 0)
 
-instance FromJSON Vector2 where
-    parseJSON (Object v) =
-      Vector2 <$> v .: "x"
-              <*> v .: "y"
-    parseJSON _          = mzero
-
-instance ToJSON Vector2 where
-    toJSON (Vector2 x y) =
-      object [ "x" .= x
-             , "y" .= y
-             ]
+inputToConstraint :: Input -> Constraint
+inputToConstraint (Input "Linear" posx posy dir mag) =
+    Linear (Vector2 posx posy) dir mag
+inputToConstraint (Input "Radial" posx posy _ _) =
+    Radial (Vector2 posx posy)
