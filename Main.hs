@@ -14,8 +14,9 @@ fieldHeight = 20
 makeSVG :: [Constraint] -> IO ()
 makeSVG cs =
     let tf = TF.makeTensorField cs
-    in putStrLn $ writeSVG (appendElements (TF.plotTensorField tf cs fieldWidth fieldHeight)
-                                            (SL.traceLines tf fieldWidth fieldHeight))
+    in putStrLn $ writeSVG (appendElements
+                           (TF.plotTensorField tf cs fieldWidth fieldHeight)
+                           (SL.traceLines tf fieldWidth fieldHeight))
 
 main :: IO ()
 main = do
