@@ -21,3 +21,6 @@ clean:
 	rm -f *.hi
 	rm -f *.o
 	rm -f Main Test_Tensor Test_TensorField
+
+sad:
+	echo ":("
