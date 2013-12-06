@@ -9,6 +9,8 @@ import System.Random
 import Data.List
 import Util
 
+import Debug.Trace
+
 type Streamline = [Vector2]
 
 data PlacementMethod = Random
@@ -109,9 +111,7 @@ placeSeedsImproved (maj,min) sls n =
                    streamlineFromEvs min nn s]
       trialSls = map mkSls trialPts
       slSets   = map (++existPts) trialSls
-      --bestSls  = Util.argmin (chiSquaredEvenSpacing fieldWidth fieldHeight 4)
-      --                       slSets
-      bestSls = head slSets
+      bestSls  = Util.argmin (chiSquaredEvenSpacing fieldWidth fieldHeight 4) slSets
   in placeSeedsImproved (maj,min) bestSls (n - 1)
       
 -- measure the X^2 goodness of fit of a  set of streamlines to determine how
@@ -135,14 +135,14 @@ placeStreamlines tf nn n Random =
       seeds       = randomSeeds n
       traceSeed s = [ streamlineFromEvs maj nn s,
                       streamlineFromEvs min nn s ]
-  in concatMap traceSeed seeds
+  in concatMap traceSeed (trace ("seeds="++show seeds)seeds)
 placeStreamlines tf nn n Furthest =
   placeSeeds (tensorfieldEigenvectors tf) [] n
 placeStreamlines tf nn n Improved =
   placeSeedsImproved (tensorfieldEigenvectors tf) [] n
 
 traceLines :: [SVGElem]
-traceLines = map drawStreamline $ placeStreamlines tf emptyNN 1 Improved
+traceLines = map drawStreamline $ placeStreamlines tf emptyNN 5 Furthest
 {-}
 traceLines = 
   let gatherMajor (elems, nn) v = (elem:elems, nn')
