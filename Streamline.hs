@@ -1,7 +1,5 @@
 module Streamline where
-import Tensor
 import TensorField
-import Constraint
 import Vector2 (Vector2 (Vector2))
 import SVGWriter
 import NearestNeighbor (Storage)
@@ -9,10 +7,6 @@ import qualified NearestNeighbor as NN
 import System.Random
 import Data.List
 import Util
-import JSONParser
-import Control.Monad
-import Control.Applicative
-import Data.Aeson
 
 type Streamline = [Vector2]
 
@@ -37,6 +31,7 @@ randomSeeds n fw fh =
       ys     = randomRs (0.0,fh) g'
   in take n (zipWith Vector2 xs ys)
 
+sampleList :: [a] -> [a]
 sampleList xs =
   let everyNth n ys = case drop (n-1) ys of
                         (z:zs) -> z : everyNth n zs
@@ -88,16 +83,17 @@ chiSquaredEvenSpacing  width _ buckets vs =
   in Data.List.sum x2
 
 placeStreamlines :: (Num a) =>
-  TensorField -> Storage a -> Int -> Float -> Float -> PlacementMethod -> [[Vector2]]
+  TensorField -> Storage a -> Int -> Float -> Float -> PlacementMethod
+  -> [[Vector2]]
 placeStreamlines tf nn n fw fh Random =
   let (maj,min)   = tensorfieldEigenvectors tf
       seeds       = randomSeeds n fw fh
       traceSeed s = [ streamlineFromEvs maj nn s fw fh,
                       streamlineFromEvs min nn s fw fh ]
   in concatMap traceSeed seeds
-placeStreamlines tf nn n fw fh Furthest =
+placeStreamlines tf _ n fw fh Furthest =
   placeSeeds (tensorfieldEigenvectors tf) [] n fw fh
-placeStreamlines tf nn n fw fh Improved =
+placeStreamlines tf _ n fw fh Improved =
   placeSeedsImproved (tensorfieldEigenvectors tf) [] n fw fh
 
 traceLines :: TensorField -> Float -> Float -> [SVGElem]

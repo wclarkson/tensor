@@ -17,7 +17,7 @@ data Input = Input
             posy  :: Float,
             dir   :: Float,
             mag   :: Float
-           } deriving (Show, Generic)
+            } deriving (Show, Generic)
 
 instance FromJSON Input
 instance ToJSON Input
@@ -33,3 +33,4 @@ inputToConstraint (Input "Linear" posx posy dir mag) =
     Linear (Vector2 posx posy) dir mag
 inputToConstraint (Input "Radial" posx posy _ _) =
     Radial (Vector2 posx posy)
+inputToConstraint _ = error "Invalid input."

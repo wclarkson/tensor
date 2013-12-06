@@ -3,11 +3,9 @@ EXTRAFLAGS=-XTypeFamilies -XFlexibleInstances -XDeriveGeneric -XNamedFieldPuns -
 
 main: Main.hs
 	ghc ${FLAGS} ${EXTRAFLAGS} Main.hs
-	./Main > test.svg
 
 nowarn:
 	ghc ${EXTRAFLAGS} Main.hs
-	./Main > test.svg
 
 nobuild:
 	ghc ${EXTRAFLAGS} Main.hs

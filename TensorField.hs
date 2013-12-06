@@ -10,7 +10,6 @@ import NearestNeighbor (Storage)
 import qualified NearestNeighbor as NN
 
 import Data.Maybe
-import Debug.Trace
 
 -- many calculations are described in
 -- Wonka: {http://peterwonka.net/Publications/pdfs/2008.SG.Chen.
@@ -96,11 +95,6 @@ addStreamlineToNN :: (Num a) => [Vector2] -> Storage a -> Storage a
 addStreamlineToNN vectors stor = foldr ins stor vectors
   where ins (Vector2 x y) st = NN.insert st (V2.Vector2 x y, 0)
 
---newNNFromStreamlines ::
---  (Num a) => [[Vector2]] -> Float -> Float -> Int -> Storage a
---newNNFromStreamlines v2list w h nbux =
---    foldr addStreamlineToNN (NN.new w h nbux) v2list
-
 -- produces an SVG to draw a standard [res x res] tensor field and the
 -- given constraints
 plotTensorField :: TensorField -> [Constraint] -> Float -> Float -> SVG
@@ -117,5 +111,3 @@ plotTensorField tf cs w h =
         in constraintLine cp (V2.add cp (V2.Vector2 cx cy))
       mkCons (Radial cp) = constraintCircle cp
   in SVG w h (map mkVecLine plotVectors ++ map mkCons cs)
-
-
