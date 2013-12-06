@@ -10,7 +10,6 @@ import NearestNeighbor (Storage)
 import qualified NearestNeighbor as NN
 
 import Data.Maybe
-import Debug.Trace
 
 -- many calculations are described in
 -- Wonka: {http://peterwonka.net/Publications/pdfs/2008.SG.Chen.
