@@ -7,9 +7,6 @@ main: Main.hs
 nowarn:
 	ghc ${EXTRAFLAGS} Main.hs
 
-nobuild:
-	ghc ${EXTRAFLAGS} Main.hs
-
 test: Test_Tensor Test_TensorField
 	./Test_Tensor
 	./Test_TensorField
