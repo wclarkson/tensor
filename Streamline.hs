@@ -1,4 +1,5 @@
-module Streamline where
+module Streamline (PlacementMethod, traceLines) where
+
 import TensorField
 import Vector2 (Vector2 (Vector2))
 import SVGWriter
