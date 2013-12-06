@@ -9,26 +9,21 @@ import System.Environment
 import System.Exit
 import qualified Data.ByteString.Lazy as B
 
-fieldWidth :: Float
-fieldWidth = 20
-fieldHeight :: Float
-fieldHeight = 20
-
-makeSVG :: [Constraint] -> IO ()
-makeSVG cs =
+makeSVG :: [Constraint] -> Float -> Float -> IO ()
+makeSVG cs fw fh =
     let tf = TF.makeTensorField cs
     in putStrLn $ writeSVG (appendElements
-                           (TF.plotTensorField tf cs fieldWidth fieldHeight)
-                           (SL.traceLines tf fieldWidth fieldHeight))
+                           (TF.plotTensorField tf cs fw fh)
+                           (SL.traceLines tf fw fh))
 
 main :: IO ()
-main = getArgs >>= parse
+main = getArgs >>= parseCmdArgs
 
-parse ["-h"]              = usage                               >> exit
-parse ["-v"]              = version                             >> exit
-parse [file, fW, fH]      = (buildViz file (read fW) (read fH)) >> exit
-parse [file, fW, fH, opt] = (buildViz file (read fW) (read fH)) >> exit
-parse _                   = usage                               >> exit
+parseCmdArgs ["-h"]              = usage                               >> exit
+parseCmdArgs ["-v"]              = version                             >> exit
+parseCmdArgs [file, fw, fh]      = (buildViz file (read fw) (read fh)) >> exit
+parseCmdArgs [file, fw, fh, opt] = (buildViz file (read fw) (read fh)) >> exit
+parseCmdArgs _                   = usage                               >> exit
 
 usage   = putStrLn "usage: tensor <inputFile> <fieldWidth> <fieldHeight> [opt]"
 version = putStrLn "Tensor v0.1"
@@ -36,8 +31,8 @@ exit    = exitWith ExitSuccess
 die     = exitWith (ExitFailure 1)
 
 buildViz :: FilePath -> Float -> Float -> IO ()
-buildViz inputFile fW fH = do
+buildViz inputFile fw fh = do
     d <- (eitherDecode <$> (B.readFile inputFile) :: IO (Either String [Input]))
     case d of
       Left err    -> putStrLn $ "Failure on input: " ++ err
-      Right input -> makeSVG $ map inputToConstraint input
+      Right input -> makeSVG (map inputToConstraint input) fw fh
