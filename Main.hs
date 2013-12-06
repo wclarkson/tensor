@@ -7,6 +7,7 @@ import Data.Aeson
 import qualified Streamline as SL
 import System.Environment
 import System.Exit
+import qualified Data.ByteString.Lazy as B
 
 fieldWidth :: Float
 fieldWidth = 20
@@ -21,24 +22,22 @@ makeSVG cs =
                            (SL.traceLines tf fieldWidth fieldHeight))
 
 main :: IO ()
-main = getArgs >>= parse >>= putStr . tensor
+main = getArgs >>= parse
 
-tensor = putStrLn "deez nutz"
+parse ["-h"]              = usage                               >> exit
+parse ["-v"]              = version                             >> exit
+parse [file, fW, fH]      = (buildViz file (read fW) (read fH)) >> exit
+parse [file, fW, fH, opt] = (buildViz file (read fW) (read fH)) >> exit
+parse _                   = usage                               >> exit
 
-parse ["-h"] = usage >> exit
-parse ["-v"] = version >> exit
-parse []     = getContents
-
-usage   = putStrLn "Usage: tac [-vh] [file ..]"
+usage   = putStrLn "usage: tensor <inputFile> <fieldWidth> <fieldHeight> [opt]"
 version = putStrLn "Tensor v0.1"
 exit    = exitWith ExitSuccess
 die     = exitWith (ExitFailure 1)
-watman  = putStrLn "watman"
-{-
-main :: IO ()
-main = do
-    d <- (eitherDecode <$> contentsOfArgv1) :: IO (Either String [Input])
+
+buildViz :: FilePath -> Float -> Float -> IO ()
+buildViz inputFile fW fH = do
+    d <- (eitherDecode <$> (B.readFile inputFile) :: IO (Either String [Input]))
     case d of
       Left err    -> putStrLn $ "Failure on input: " ++ err
       Right input -> makeSVG $ map inputToConstraint input
-      -}

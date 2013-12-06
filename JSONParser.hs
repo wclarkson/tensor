@@ -5,8 +5,6 @@ where
 
 import Data.Aeson
 import GHC.Generics
-import System.Environment
-import qualified Data.ByteString.Lazy as B
 import Constraint
 import Vector2
 
@@ -21,12 +19,6 @@ data Input = Input
 
 instance FromJSON Input
 instance ToJSON Input
-
-contentsOfArgv1 :: IO B.ByteString
-contentsOfArgv1 = do
-  a <- getArgs
-  if length a /= 1 then error "No input file"
-                   else B.readFile (a !! 0)
 
 inputToConstraint :: Input -> Constraint
 inputToConstraint (Input "Linear" posx posy dir mag) =
