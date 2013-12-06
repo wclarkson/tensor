@@ -1,0 +1,16 @@
+[{
+  "tycon" : "Linear",
+  "posx" : 2,
+  "posy" : 2,
+  "dir" : 0.01,
+  "mag" : 3
+},
+{
+  "tycon" : "Radial",
+  "posx" : 10,
+  "posy" : 10,
+  "dir" : 0,
+  "mag" : 0
+}
+
+]
