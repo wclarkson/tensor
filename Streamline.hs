@@ -1,7 +1,6 @@
-module Streamline where
-import Tensor
+module Streamline (PlacementMethod, traceLines) where
+
 import TensorField
-import Constraint
 import Vector2 (Vector2 (Vector2))
 import SVGWriter
 import NearestNeighbor (Storage)
@@ -9,10 +8,6 @@ import qualified NearestNeighbor as NN
 import System.Random
 import Data.List
 import Util
-import JSONParser
-import Control.Monad
-import Control.Applicative
-import Data.Aeson
 
 type Streamline = [Vector2]
 
@@ -37,6 +32,7 @@ randomSeeds n fw fh =
       ys     = randomRs (0.0,fh) g'
   in take n (zipWith Vector2 xs ys)
 
+sampleList :: [a] -> [a]
 sampleList xs =
   let everyNth n ys = case drop (n-1) ys of
                         (z:zs) -> z : everyNth n zs
