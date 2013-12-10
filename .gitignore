@@ -12,3 +12,5 @@ Main
 
 .*.swp
 .*.swo
+
+.DS_Store
