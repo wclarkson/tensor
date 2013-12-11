@@ -1,6 +1,6 @@
 module Streamline (PlacementMethod, traceLines) where
 
-import TensorField
+import TensorField as TF
 import Vector2 (Vector2 (Vector2))
 import SVGWriter
 import NearestNeighbor (Storage)
@@ -39,10 +39,10 @@ sampleList xs =
                         []     -> []
   in everyNth 10 xs
 
-placeSeeds :: (VectorField, VectorField) -> [Streamline] -> Int ->
-  Float -> Float -> [Streamline]
-placeSeeds _         sls 0 _  _  = sls
-placeSeeds (maj,min) sls n fw fh =
+placeSeeds :: (Num a) => (VectorField, VectorField) -> Storage a -> [Streamline] -> Int ->
+  Float -> Float -> ([Streamline], Storage a)
+placeSeeds _         nn sls 0 _  _  = (sls, nn)
+placeSeeds (maj,min) nn sls n fw fh =
   let existPts = concatMap sampleList sls
       trialPts = randomSeeds 10 fw fh
       dist (Vector2 x y) (Vector2 x2 y2) = (x-x2)*(x-x2) + (y-y2)*(y-y2)
@@ -50,24 +50,37 @@ placeSeeds (maj,min) sls n fw fh =
                       [] -> 2*fw  -- this is evil
                       _  -> minimum (map (dist v) existPts)
       seed     = Util.argmax closestPt trialPts
-      nn       = NN.new fw fh 4
       majSl    = streamlineFromEvs maj nn seed fw fh
       minSl    = streamlineFromEvs min nn seed fw fh
-  in placeSeeds (maj,min) (majSl:minSl:sls) (n - 1) fw fh
+      nn'      = TF.addStreamlineToNN majSl nn
+      nn''     = TF.addStreamlineToNN minSl nn'
+  in placeSeeds (maj,min) nn'' (majSl:minSl:sls) (n - 1) fw fh
 
-placeSeedsImproved ::
-  (VectorField, VectorField) -> [Streamline] -> Int -> Float -> Float -> [Streamline]
-placeSeedsImproved _         sls 0 _  _  = sls
-placeSeedsImproved (maj,min) sls n fw fh =
+placeSeedsImproved :: (Num a) =>
+  (VectorField, VectorField) -> Storage a -> [Streamline] -> Int -> Float -> Float -> ([Streamline], Storage a)
+placeSeedsImproved _         nn sls 0 _  _  = (sls, nn)
+placeSeedsImproved (maj,min) nn sls n fw fh =
   let existPts = map sampleList sls
       trialPts = randomSeeds 10 fw fh
-      nn       = NN.new fw fh 4
       mkSls s  = [ streamlineFromEvs maj nn s fw fh,
                    streamlineFromEvs min nn s fw fh ]
       trialSls = map mkSls trialPts
       slSets   = map (++existPts) trialSls
       bestSls  = Util.argmin (chiSquaredEvenSpacing fw fh 4) slSets
-  in placeSeedsImproved (maj,min) bestSls (n - 1) fw fh
+      nn'      = TF.addStreamlineToNN (head bestSls) nn
+  in placeSeedsImproved (maj,min) nn' bestSls (n - 1) fw fh
+
+placeSeedsRandom :: (Num a) =>
+  (VectorField, VectorField) -> Storage a -> [Streamline] -> Int
+    -> Float -> Float -> ([Streamline], Storage a)
+placeSeedsRandom _         nn sls 0 _  _  = (sls, nn)
+placeSeedsRandom (maj,min) nn sls n fw fh =
+  let s           = head $ randomSeeds 1 fw fh
+      majSl       = streamlineFromEvs maj nn s fw fh
+      minSl       = streamlineFromEvs min nn s fw fh
+      nn'         = TF.addStreamlineToNN majSl nn
+      nn''        = TF.addStreamlineToNN minSl nn
+  in placeSeedsRandom (maj,min) nn'' (majSl:minSl:sls) (n - 1) fw fh
 
 -- measure the X^2 goodness of fit of a  set of streamlines to determine how
 -- evenly spaced it is
@@ -85,18 +98,14 @@ chiSquaredEvenSpacing  width _ buckets vs =
 
 placeStreamlines :: (Num a) =>
   TensorField -> Storage a -> Int -> Float -> Float -> PlacementMethod
-  -> [[Vector2]]
+  -> [Streamline]
 placeStreamlines tf nn n fw fh Random =
-  let (maj,min)   = tensorfieldEigenvectors tf
-      seeds       = randomSeeds n fw fh
-      traceSeed s = [ streamlineFromEvs maj nn s fw fh,
-                      streamlineFromEvs min nn s fw fh ]
-  in concatMap traceSeed seeds
-placeStreamlines tf _ n fw fh Furthest =
-  placeSeeds (tensorfieldEigenvectors tf) [] n fw fh
-placeStreamlines tf _ n fw fh Improved =
-  placeSeedsImproved (tensorfieldEigenvectors tf) [] n fw fh
+  fst $ placeSeedsRandom (tensorfieldEigenvectors tf) nn [] n fw fh
+placeStreamlines tf nn n fw fh Furthest =
+  fst $ placeSeeds (tensorfieldEigenvectors tf) nn [] n fw fh
+placeStreamlines tf nn n fw fh Improved =
+  fst $ placeSeedsImproved (tensorfieldEigenvectors tf) nn [] n fw fh
 
 traceLines :: TensorField -> Float -> Float -> [SVGElem]
 traceLines tf fw fh =
-  map drawStreamline $ placeStreamlines tf (NN.new fw fh 4) 8 fw fh Furthest
+  map drawStreamline $ placeStreamlines tf (NN.new fw fh 10) 8 fw fh Random
