@@ -1,5 +1,12 @@
 \documentclass[twocolumn]{article}
 \usepackage{amsmath}
+\usepackage{graphicx}
+
+%borders
+\usepackage{float}
+\floatstyle{boxed}
+\restylefloat{figure}
+
 
 \title{Modularizing Street Map Generation \\
     \vspace{8pt} \large An Adventure in Tensors}
@@ -79,6 +86,7 @@ code is of the utmost importance. Later in the paper, we will assess our
 success in achieving these goals.
 
 \section{Mathematical Background}
+\label{sec:math}
 A tensor $t$ is a *magical thing* represented by a 2x2 symmetric, traceless
 matrix:
 \[
@@ -296,6 +304,28 @@ present a mostly heuristic, slightly quantitative attempt to qualify our
 success, using both internal evaluation and comparisons to existing systems
 \cite{chen}.
 
+\begin{figure*}[t!]
+\begin{verbatim}
+-- returns a tuple of the (larger, smaller) eigenvectors of a tensor
+eigenvalues :: Tensor -> (Float, Float)
+eigenvalues (Tensor a b d) =
+  let eval = sqrt (a*a + b*b)
+  in  (eval, (-1)*eval)
+
+-- returns a tuple of the (major, minor) eigenvectors for a tensor
+eigenvectors :: Tensor -> (V2.Vector2, V2.Vector2)
+eigenvectors (Tensor a 0.0 d) =
+  if a > d then (V2.Vector2 1 0, V2.Vector2 0 1)
+     else (V2.Vector2 0 1, V2.Vector2 1 0)
+     eigenvectors (Tensor a b d) =
+       let (eval1, eval2) = eigenvalues (Tensor a b d)
+           mkEvec eval    = V2.Vector2 1 ((eval - a) / b)
+       in (mkEvec eval1, mkEvec eval2)
+\end{verbatim}
+\caption{Haskell implementation of eigenvector calculation}
+\label{fig:evecs}
+\end{figure*}
+
 \subsection{Modularity \& Extensibility}
 We believe that we were successful in creating a modular system with reusable
 parts that is easy to understand, extend, and modify. One way to illustrate
@@ -337,6 +367,20 @@ Overall, this seemed to be successful. In general, functional languages are
 well suited to express mathematics. Our decision to implement this program in
 Haskell meant that that we were able to take advantage of this natural
 proclivity towards math in order to make our code easy to understand.
+
+An example of this can be seen in the calculation of eigenvectors. We derived
+the formula for the eigenvector of a symmetric, traceless tensor 
+(see Section~\ref{sec:math}) and implemented it in the functions in
+Figure~\ref{fig:evecs}.
+
+In [Chen], there is a 75-line function,
+\texttt{cal\_eigenvecs\_onevert\_quad}, to do approximately the same thing. There
+is a fair amount of documentation in the body of the function, explaining what
+each line does, but there also seem to be some side effects relating to global
+variables and large data structures that the authors found difficult to follow,
+mostly by the nature of the language.  Generally speaking, we found that the
+mathematics was significantly easier to express and review in a Haskell
+implementation.
 
 \section{Contributions}
 
