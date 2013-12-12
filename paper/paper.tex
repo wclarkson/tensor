@@ -2,11 +2,7 @@
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{subcaption}
-
-%borders
-\usepackage{float}
-\floatstyle{boxed}
-\restylefloat{figure}
+\usepackage{fancyvrb}
 
 
 \title{Modularizing Street Map Generation \\
@@ -33,7 +29,7 @@
 
 \begin{abstract}
 This paper addresses the issue of creating modular, extensible code given an
-existing solution to a problem, namely, interactively modeling large street
+existing solution to a problem, namely, procedurally modeling large street
 networks. We describe a functional implementation of a framework that allows
 users to create a realistic street network over an empty domain, based on the
 techniques described in \textit{Interactive Procedural Street Modelling}
@@ -49,8 +45,9 @@ with a variety of mathematical algorithms, giving rise to the growing field of
 procedural generation. In this paper we will discuss an algorithm using tensor
 fields, from \cite{chen}, to generate realistic city street maps. To facilitate
 the generation of aesthetically pleasing maps which fit an artist's
-requirements, we implement a simple system of user-specified constraints to
-allow the user to shape the resulting street map to fit their needs.
+requirements, we implement a simple system by which the user can input
+constraints to the algorithm, shaping the resulting street map to fit their
+needs.
 
 \section{Existing Work}
 \textit{Interactive Procedural Street Modelling} \cite{chen} introduces a novel
@@ -63,31 +60,30 @@ tensor field. The mathematical concepts fundamental to the procedural
 generation algorithm are covered thoroughly and clearly.
 
 While all of the information presented in the paper completely describes all of
-the necessary mathematics in a clear manner,
-we found the provided implementation of the described
-algorithm more difficult to grasp. The large quantity of \cpp code necessary to
-implement the full-featured interactive system provided by Chen et al. made it
-difficult for us to thoroughly understand the constituent components such that
-we would be able to modify or extend the existing code.
+the necessary mathematics for the algorithm in a clear manner, we found the
+provided implementation more difficult to grasp. The large quantity of \cpp
+code necessary to implement the full-featured interactive system provided by
+Chen et al. made it difficult for us to thoroughly understand the constituent
+components such that we would be able to modify or extend the existing code.
 
 \section{Our Goals}
-We thought we could use the power and expressiveness of a functional language
-to produce a more modular, extensible, and readable implementation of the core
-of the algorithm described in Chen et al. which would provide a more
-accessible starting point for later work to build off of. While we sacrifice
-the performance offered by the \cpp implementation, which is closely tied to
-OpenGL, we contend that the gains in programmer productivity will more than
-make up for this deficit. While a production implementation of such a pipeline
-should certainly be implemented with efficiency in mind, we believe that, in
-the process of investigating new algorithms, the ease with which the
-implementor can translate an idea or mathematical concept into proof-of-concept
-code is of the utmost importance. Later in the paper, we will assess our
-success in achieving these goals.
+We approached the problem with the idea that we could use the power and
+expressiveness of a functional language to produce a more modular, extensible,
+and readable implementation of the core of the algorithm described in Chen et
+al. which would provide a more accessible starting point for later work to
+build off of. While we sacrifice the performance offered by the \cpp
+implementation, which is closely tied to OpenGL, we contend that the gains in
+programmer productivity will alleviate this deficit. While a production
+implementation of such a pipeline should certainly be implemented with
+efficiency in mind, we believe that, in the process of investigating new
+algorithms, the ease with which the implementor can translate an idea or
+mathematical concept into proof-of-concept code is of the utmost importance.
+Later in the paper, we will assess our success in achieving these goals.
 
-\section{Mathematical Background}
-\label{sec:math}
-A tensor $t$ is a geometric object represented by a 2x2 symmetric, traceless
-matrix:
+\section{Mathematical Background}\label{sec:math}
+In this section we will introduce the mathematical concepts necessary to
+understand our algorithm. A tensor $t$ is a geometric object represented by a
+2x2 symmetric, traceless matrix:
 \[
     \sqmat{\cos{2\theta}}{\sin{2\theta}}{\sin{2\theta}}{-\cos{2\theta}}
     = \sqmat{a}{b}{b}{-a}
@@ -97,14 +93,14 @@ $R\geq0 \textrm{ and } \theta\in[0,2\pi)$. Since the matrix is symmetric and
 traceless, it is only necessary to store two values, $a$ and $b$ to encode
 the tensor.
 
-The major eigenvectors of $t$ are
+The major eigenvectors of $t$ are:
 \[
     \left\{
         \lambda\mkvec{\cos{\theta}}{\sin{\theta}} ~|~ \lambda \neq 0
     \right\}
 \]
 
-The minor eigenvectors are
+The minor eigenvectors are:
 \[
     \left\{
         \lambda\mkvec
@@ -113,33 +109,33 @@ The minor eigenvectors are
         ~|~ \lambda \neq 0
     \right\}
 \]
-A tensor field $T$ describes the flow of the constraints across a field,
-and is represented as a function that maps from 2D points to tensors. In the
-context of this project, a tensor is simply a tool we use to determine the
-direction of a field at a point. This direction is found by calculating the
-eigenvectors of the tensors. Major eigenvectors are parallel to the field;
-minor eigenvectors are perpendicular.
 
-Another important concept is the hyperstreamline. This is an effective way to
-visualize tensor fields. It is created by drawing a line through an eigenvector
-field such that the line is tangent to every eigenvector along its path. In
-this setting, there are major and minor hyperstreamlines that correspond to the
-major and minor eigenvectors. The major and minor eigenvectors of a tensor are
-guaranteed to be perpendicular for any tensor, unless it is a degenerate point
-in the tensor field ($T(\bf p)=0$), for which eigenvectors cannot be
-calculated. This property leads to the generation of perpendicular street
-intersections, a common feature of real-world road networks, especially in
-cities.
+A tensor field $T$ describes the flow of the constraints across a field, and is
+represented as a function that maps from 2D points to tensors. In the context
+of this project, a tensor a tool we use to determine the direction of a field
+at a given point. This direction is found by calculating the eigenvectors of
+the tensors. Major eigenvectors are parallel to the field; minor eigenvectors
+are perpendicular.
+
+Another important concept is the hyperstreamline, an effective way to visualize
+tensor fields. A hyperstreamline is created by drawing a line through an
+eigenvector field such that the line is tangent to every eigenvector along its
+path. In this setting, there are major and minor hyperstreamlines that
+correspond to the major and minor eigenvectors. The major and minor
+eigenvectors of a tensor are guaranteed to be perpendicular for any tensor,
+unless it is a degenerate point in the tensor field ($T(\bf p)=0$), for which
+eigenvectors cannot be calculated. This property leads to the generation of
+perpendicular street intersections, a common feature of real-world road
+networks, especially in cities.
 
 \section{Pipeline}
 We begin with a set of user constraints, which illustrate the general shape of
 the roads on the blank canvas. These can be linear or radial, and can be input
 as JSON. From these we generate a tensor field, and from that, major and minor
-eigenvector fields, which describe the direction stipulate by the constraints at
-every point in the area. Finally, based on these eigenvector fields, we generate
-seed points from which to trace streamlines across the map. These streamlines
-produce the final roads.
-
+eigenvector fields, which describe the direction stipulated by the constraints
+at every point in the area. Finally, based on these eigenvector fields, we
+generate seed points from which streamlines are traced across the map. These
+streamlines produce the final roads.
 
 \begin{figure*}[t!]
 \begin{center}
@@ -192,8 +188,6 @@ next be used to form tensor fields.
     \caption{JSON input constraint format}
 \label{fig:json}
 \end{figure*}
-% \floatstyle{boxed}
-% \restylefloat{figure}
 
 \subsection{Tensor Field Generation}
 From each constraint, a tensor field is defined across the entire domain; this
@@ -208,7 +202,7 @@ equations in this section follow closely the system detailed in \cite{chen}.
 A linear constraint produces the grid pattern that is a common basis for many
 cities (consider the streets of Manhattan). The constraint has two parts: a
 magnitude $l$ and a direction $\theta$. The basis field for a linear constraint
-is defined as
+is defined as:
 \[
     T(\pt) =
         l\sqmat{\cos{2\theta}}{\sin{2\theta}}{\sin{2\theta}}{-\cos{2\theta}}
@@ -221,9 +215,8 @@ $\bf p$.
 A radial constraint is used to describe specifically circular areas, such as
 roundabouts or more generally curved roads, common in suburban areas. They are
 defined at a point $(x_0,y_0)$; major streamlines are drawn as concentric
-circles
-around the point, while minor ones emanate outwards. The basis field for a
-radial constraint at a point $\pt=x_p,y_p$ is defined as
+circles around the point, while minor ones emanate outwards. The basis field
+for a radial constraint at a point $\pt=x_p,y_p$ is defined as
 \[
     T(\pt) = \sqmat{y^2-x^2}{-2xy}{-2xy}{-(y^2-x^2)}
 \]
@@ -244,15 +237,16 @@ constraint.
 \subsection{Eigenvectors}
 The eigenvalues of a tensor $t$ represented by the matrix $\sqmat{a}{b}{b}{-a}$
 are:
-\[
-    \lambda = \pm\sqrt{a^2+b^2} \\
-\]
-The major eigenvalue, $\lambda_1$, is the larger value, and the minor
-eigenvalue, $\lambda_2$ is the smaller value. The corresponding eigenvectors
-are then
+\begin{align}
+    \lambda_1 &= \sqrt{a^2+b^2} \\
+    \lambda_2 &= -\lambda_1 \\
+\end{align}
+
+The corresponding eigenvectors are:
 \[
     \epsilon_i = \left\{1,\frac{\lambda_i-a}{b}\right\}
 \]
+
 The eigenvectors are defined if the tensor field is not degenerate (that is,
 $a$ and $b$ are both zero) at that point \cite{find-evs}.
 
@@ -266,7 +260,7 @@ approximate this, we choose a step size $d_\textrm{step}$. Beginning at a seed
 point, which is chosen using the methods detailed in Section \ref{seedpoints},
 we calculate the eigenvector at that point, extend a line in that direction
 with length $d_\textrm{step}$, and check if we have reached an end condition.
-This process is repeated until the line until one of three end conditions is
+This process is repeated on the line until one of three end conditions is
 reached:
 \begin{enumerate}
     \item The point is outside the bounds of the map area
@@ -275,21 +269,16 @@ reached:
 \end{enumerate}
 
 The first is self-explanatory; if the streamline leaves the boundary of the
-map, then we don’t need to draw it any more. The second is one of the
-alterations we used, based on the work of \cite{chen}. When designing a set of
-roads, it is rare that two streets will approach each other and not connect,
-whether they approach at a larger angle (an intersection) or are running mostly
-parallel to each other (a merge zone). To approximate this, at each point we
-find the nearest neighbor out of the streamlines that have already been drawn.
-If it is within a certain separation distance, we draw a line directly between
-the two points.
+map, then we don’t need to draw it any more.
 
+The second is one of the alterations we used, based on the work of \cite{chen}.
+When designing a set of roads, it is rare that two streets will approach each
+other and not connect, whether they approach at a larger angle (an
+intersection) or are running mostly parallel to each other (a merge zone). To
+approximate this, at each point we find the nearest neighbor out of the
+streamlines that have already been drawn.  If it is within a certain separation
+distance, we draw a line directly between the two points.
 
-\begin{figure*}[t!]
-    \todo{image of that nice circular constraint that worked really well with
-    this}
-% \label{fig:cycles} name?
-\end{figure*}
 
 The third condition arises mainly with radial constraints. Although a true
 hyperstreamline would form a perfect circle around a point, our step-size
@@ -298,8 +287,12 @@ obviously a behavior that would not appear in normal maps (other than an
 apocalyptic Boston, perhaps). So, when we detect a streamline circling in on
 itself, we close the gap and end the spiral.
 
-\floatstyle{plain}
-\restylefloat{figure}
+\begin{figure*}[t!]
+    \centering
+    \fbox{\includegraphics[width=4in]{images/linear.pdf}}
+    \caption{Streamline tracing near road merging}
+\end{figure*}
+
 \begin{figure*}[t!]
     \centering
     \begin{subfigure}[b]{2.4in}
@@ -314,11 +307,9 @@ itself, we close the gap and end the spiral.
 \caption{Streamline tracing cycle detection}
 \label{fig:cycles}
 \end{figure*}
-\floatstyle{boxed}
-\restylefloat{figure}
 
 \subsection{Seed Placement}\label{seedpoints}
-To begin constructing a streamline, one must choose a seed point—an initial
+To begin constructing a streamline, one must choose a seed point—--an initial
 coordinate in 2D space from which the streamline is traced. In practice, the
 matter of carefully choosing seed points is very important in generating an
 evenly spaced configuration of roads. We investigated three methods of placing
@@ -326,18 +317,20 @@ seed points:
 \begin{enumerate}
     \item Random
     \item Furthest-Point
-    \item Even Streamline Spacing
+    \item Even Streamline Spacing ($\chi^2$ distribution)
 \end{enumerate}
+
 Purely random placement of seed points generally results in both clusters of
-roads which are too close together and large gaps between roads. In the
-furthest-point placement, we place each new seed point within the bounds of the
-space such that the distance to all existing streamlines is maximized. As a
-simplifying heuristic for this method, we generate a number of random candidate
-seed points which is small compared to the infinite number of possible seed
-points (constrained only by floating point precision) and choose the one
-furthest from all existing streamlines. In practice, this offers a significant
-improvement over the random seed placement, and results in a more even
-distribution of streamlines.
+roads which are too close together and large gaps between roads.
+
+In the furthest-point placement, we place each new seed point within the bounds
+of the space such that the distance to all existing streamlines is maximized.
+As a simplifying heuristic for this method, we generate a number of random
+candidate seed points which is small compared to the infinite number of
+possible seed points (constrained only by floating point precision) and choose
+the one furthest from all existing streamlines. In practice, this offers a
+significant improvement over the random seed placement, and results in a more
+even distribution of streamlines.
 
 However, even choosing well-spaced seed points will not necessarily result in
 an even distribution of streamlines, since two well-spaced seed points can
@@ -360,7 +353,8 @@ existing set of streamlines, optimizes the evenness of streamline placement,
 according to the above metric. As with the previous method, we employ a
 simplifying heuristic, generating a relatively small set of candidate seed
 points, tracing a streamline from each, determining which streamline results in
-a more even field of streamlines, and adding it.
+a more even field of streamlines, and adding it to the existing set of
+streamlines.
 
 \section{Assessment}
 There were two main goals that we set out to achieve with this project. Here we
@@ -369,23 +363,24 @@ success, using both internal evaluation and comparisons to existing systems
 \cite{chen}.
 
 \begin{figure*}[t!]
-\begin{verbatim}
+\begin{Verbatim}[frame=single]
 -- returns a tuple of the (larger, smaller) eigenvectors of a tensor
 eigenvalues :: Tensor -> (Float, Float)
 eigenvalues (Tensor a b d) =
-  let eval = sqrt (a*a + b*b)
-  in  (eval, (-1)*eval)
+let eval = sqrt (a*a + b*b)
+in  (eval, (-1)*eval)
 
 -- returns a tuple of the (major, minor) eigenvectors for a tensor
 eigenvectors :: Tensor -> (V2.Vector2, V2.Vector2)
 eigenvectors (Tensor a 0.0 d) =
-  if a > d then (V2.Vector2 1 0, V2.Vector2 0 1)
-     else (V2.Vector2 0 1, V2.Vector2 1 0)
-     eigenvectors (Tensor a b d) =
-       let (eval1, eval2) = eigenvalues (Tensor a b d)
-           mkEvec eval    = V2.Vector2 1 ((eval - a) / b)
-       in (mkEvec eval1, mkEvec eval2)
-\end{verbatim}
+if a > d then (V2.Vector2 1 0, V2.Vector2 0 1)
+   else (V2.Vector2 0 1, V2.Vector2 1 0)
+   eigenvectors (Tensor a b d) =
+     let (eval1, eval2) = eigenvalues (Tensor a b d)
+         mkEvec eval    = V2.Vector2 1 ((eval - a) / b)
+     in (mkEvec eval1, mkEvec eval2)
+\end{Verbatim}
+
 \caption{Haskell implementation of eigenvector calculation (from
             \texttt{Tensor.hs})}
 \label{fig:evecs}
