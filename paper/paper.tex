@@ -77,9 +77,15 @@ cities.
 
 \section{Pipeline}
 
-\section{Implementation Details}
-
 \subsection{User-Generated Constraints}
+We begin with a JSON parser, which accepts linear and radial constraints.
+Constraints must be input with their type, linear or radial, in addition to
+their position in the domain (in the form of x and y coordinates), and finally,
+if the constraint is linear, it’s direction in radians and magnitude. In
+addition, the executable will accept width and height parameters representing
+the size of the domain to build street maps on. Together, the JSON constraints
+and width/height parameters form the initial input data that will next be used
+to form tensor fields.
 
 \subsection{Tensor Field Generation}
 From each constraint, a tensor field is defined across the entire domain; this
@@ -126,7 +132,7 @@ where $d$ is a decay constant, $\pt_i$ is the point at which the $i$th
 constraint is defined, and $T_i$ is the basis field corresponding to the $i$th
 constraint.
 
-\paragraph{Eigenvectors}
+\subsection{Eigenvectors}
 The eigenvalues of a tensor $t$ represented by the matrix $\sqmat{a}{b}{b}{-a}$
 are:
 \[
@@ -226,11 +232,53 @@ a more even field of streamlines, and adding it.
 
 \todo{add practical results of this method if we can get it working}
 
-\section{Assessment of our Work}
+\section{Assessment}
+There were two main goals that we set out to achieve with this project. Here we
+present a mostly heuristic, slightly quantitative attempt to qualify our
+success, using both internal evaluation and comparisons to existing systems
+\cite{chen}.
+
+\subsection{Modularity \& Extensibility}
+We believe that we were successful in creating a modular system with reusable
+parts that is easy to understand, extend, and modify. One way to illustrate
+this is by looking at our pipeline. As a refresher, look at Fig. ***. Each
+step of the pipeline has a clear correspondence in the modules that we have
+written. We have two modules to deal with constraints, \texttt{Constraint}. To transform
+constraints to maps, we have written \texttt{TensorField} and \texttt{Tensor} modules, the latter
+of which performs operations on tensors including eigenvector calculations, as
+well as \texttt{Streamline}, which has the ability to calculate seed points and trace
+lines. 
+
+We also created several generally useful modules, including \texttt{Vector2},
+which performs basic operations on 2-dimensional vectors and
+\texttt{NearestNeighbor}, which defines a type class for a structure that can
+store \texttt{Vector2}s and query for the nearest neighbor, as well as a
+bucket-based implementation of such a data structure. To deal with input and
+output, we created a \texttt{JSONParser} so that our input can come from any
+source that is capable of producing JSON, and an \texttt{SVGWriter}, which
+deals with the widely-used file format that produces the output seen in many of
+the figures in this paper.
+
+In an attempt to compare this with the original work, we consulted the header
+files available with Chen’s code. The system has significantly more
+functionality than ours, but we had some difficulty discerning which modules
+were parallel to ours. The \texttt{tensoranalysis} contains methods for tensor
+line tracing, and \texttt{ClosedStreamlineTracing} seems to be related,
+although we did not find documentation on the difference between open and
+closed tracing. \texttt{SeedPointCtrlDlg} is a dialogue probably related to the
+OpenGL framework, but didn’t have the actual calculations of seed points. At
+the least, our implementation has a more direct pipeline-to-module correlation,
+which will be beneficial for future contributors who wish to build off of our
+work.
+
+\subsection{Natural Expression of Underlying Mathematics}
+Overall, this seemed to be successful. In general, functional languages are
+well suited to express mathematics. Our decision to implement this program in
+Haskell meant that that we were able to take advantage of this natural
+proclivity towards math in order to make our code easy to understand.
 
 \section{Contributions}
 
-\onecolumn
 \bibliographystyle{plain}
 \bibliography{references}
 
