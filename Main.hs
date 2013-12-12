@@ -43,6 +43,7 @@ buildViz inputFile fw fh pmeth = do
                                     "furthest" -> Furthest
                                     "random"   -> Random
                                     "improved" -> Improved
+                                    _          -> error "Seed placement method not found."
                      in makeSVG (map inputToConstraint input) fw fh method
 
 
