@@ -1,0 +1,27 @@
+[
+{ "tycon" : "Linear",
+  "posx" : 0,
+  "posy" : 0,
+  "dir" : 0.785,
+  "mag" : 5
+},
+{
+  "tycon" : "Radial",
+  "posx" : 15,
+  "posy" : 15,
+  "dir" : 0,
+  "mag" : 0
+},
+{ "tycon" : "Linear",
+  "posx" : 30,
+  "posy" : 0,
+  "dir" : 4,
+  "mag" : 10
+},
+{ "tycon" : "Linear",
+  "posx" : 30,
+  "posy" : 30,
+  "dir" : 0.785,
+  "mag" : 5
+}
+]

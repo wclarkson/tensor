@@ -108,4 +108,4 @@ placeStreamlines tf nn n fw fh Improved =
 
 traceLines :: TensorField -> Float -> Float -> [SVGElem]
 traceLines tf fw fh =
-  map drawStreamline $ placeStreamlines tf (NN.new fw fh 10) 8 fw fh Random
+  map drawStreamline $ placeStreamlines tf (NN.new fw fh 25) 8 fw fh Furthest

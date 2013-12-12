@@ -23,4 +23,4 @@ clean:
 	rm -f Main Test_Tensor Test_TensorField
 
 sad:
-	echo ":("
+	@echo ":("

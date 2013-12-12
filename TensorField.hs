@@ -82,7 +82,7 @@ traceStreamline vf nn0 w h p0 step len =
                         Nothing             -> False
             p'      = V2.add p (V2.scalarTimes step (V2.unit dir'))
             output | not inBound = mkStep (p':p:ps) dir' 0
-                   | cycle       = mkStep (p0:p:ps) vlast 0
+                   -- | cycle       = mkStep (p0:p:ps) vlast 0
                    | iSect       = mkStep ((fst $ fromJust lookup):p:ps) dir' 0
                    | otherwise   = mkStep (p':p:ps) dir' (n - 1)
           in output
