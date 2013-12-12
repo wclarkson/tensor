@@ -114,6 +114,15 @@ intersections, a common feature of real-world road networks, especially in
 cities.
 
 \section{Pipeline}
+We begin with a set of user constraints, which illustrate the general shape of
+the roads on the blank canvas. These can be linear or radial, and can be input
+as JSON. From these we generate a tensor field, and from that, major and minor
+eigenvector fields, which describe the direction stipulate by the constraints at
+every point in the area. Finally, based on these eigenvector fields, we generate
+seed points from which to trace streamlines across the map. These streamlines
+produce the final roads.
+
+\todo{insert pipeline diagram}
 
 \subsection{User-Generated Constraints}
 We begin with a JSON parser, which accepts linear and radial constraints.
