@@ -4,11 +4,15 @@
 *.aux
 *.log
 *.out
+*.bbl
+*.blg
+*.synctex.gz
 
 *.o
 *.hi
 Main
 /*.svg
+/*.png
 
 .*.swp
 .*.swo

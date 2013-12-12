@@ -209,8 +209,13 @@ generate a set of discrete points evenly spaced along each streamline, place
 these points into $n\times n$ equal-sized buckets covering the bounds of the
 space, and perform a chi-squared goodness of fit test on distribution of points
 across bucket, where the expected distribution is uniform:
-
-\todo{chi-squared equation}
+\[
+    \chi^2 = \sum_{i=1}^{n^2} \frac{(O_i-E_i)^2}{E_i}
+\]
+where $n$ is the number of buckets along each axis, $O_i$ is the observed
+number of points in the $i$th bucket, and $E_i=\frac{m}{n^2}$ is the
+expected number of points in each bucket, assuming a uniform distribution,
+where $m$ is the total number of points in the space.
 
 We will choose the seed point whose corresponding streamline, when added to the
 existing set of streamlines, optimizes the evenness of streamline placement,
