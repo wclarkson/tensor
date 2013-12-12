@@ -128,7 +128,7 @@ eigenvectors cannot be calculated. This property leads to the generation of
 perpendicular street intersections, a common feature of real-world road
 networks, especially in cities.
 
-\section{Pipeline}
+\section{Pipeline}\label{sec:pipeline}
 We begin with a set of user constraints, which illustrate the general shape of
 the roads on the blank canvas. These can be linear or radial, and can be input
 as JSON. From these we generate a tensor field, and from that, major and minor
@@ -308,7 +308,7 @@ itself, we close the gap and end the spiral.
 \label{fig:cycles}
 \end{figure*}
 
-\subsection{Seed Placement}\label{seedpoints}
+\subsection{Seed Placement}\label{sec:seedpoints}
 To begin constructing a streamline, one must choose a seed point—--an initial
 coordinate in 2D space from which the streamline is traced. In practice, the
 matter of carefully choosing seed points is very important in generating an
@@ -357,10 +357,37 @@ a more even field of streamlines, and adding it to the existing set of
 streamlines.
 
 \section{Assessment}
-There were two main goals that we set out to achieve with this project. Here we
-present a mostly heuristic, slightly quantitative attempt to qualify our
-success, using both internal evaluation and comparisons to existing systems
-\cite{chen}.
+We set out to achieve two goals: modularity and expressiveness. In this section
+we will examine the extent to which these goals were achieved.
+
+\subsection{Modularity and Extensibility}
+In Section \ref{sec:seedpoints}, we outlined three methods of seedpoint
+placement: random, furthest-point, and $\chi^2$ even spacing. All three
+are implemented by functions in the \texttt{Streamline} module, and follow a
+similar template. Extending this module with other methods is as simple as
+implementing a new function with the same type signature as
+\texttt{placeSeeds}, adding a new value constructor to the datatype
+\texttt{PlacementMethod}, and adding a new case to the function
+\texttt{placeStreamlines} to match the new data constructor. The purity of
+functions in a language such as Haskell makes it simple to drop in replacements
+for existing functions because one does not have to consider possible side
+effects, but only the types of the inputs and output.
+
+In order to detect intersections between streamlines as they are traced, we
+defined the \texttt{NearestNeighbor} module to implement a data structure which
+stored a set of 2D points and could be queried to determine which of the stored
+points was closest to the query point. This is implemented using a type
+family, with an instance utilizing a blocked 2D array implementation. This
+instance was sufficient for testing purposes, but is currently the performance
+bottleneck in streamline tracing. A new instance of the \texttt{Storage}
+type family could easily be defined in accordance with the type signature to
+provide a more efficient representation. For example, a k-d tree instance of
+the type family could offer higher performance. This well-defined abstraction
+boundary makes this aspect of our pipeline very easily extensible.
+
+\subsection{Expressiveness}
+As our work was not a complete reimplementation of the system described in
+\cite{chen}
 
 \begin{figure*}[t!]
 \begin{Verbatim}[frame=single]
@@ -387,25 +414,6 @@ if a > d then (V2.Vector2 1 0, V2.Vector2 0 1)
 \end{figure*}
 
 \subsection{Modularity \& Extensibility}
-We believe that we were successful in creating a modular system with reusable
-parts that is easy to understand, extend, and modify. One way to illustrate
-this is by looking at our pipeline (Figure \ref{fig:pipeline}). Each step of
-the pipeline has a clear correspondence in the modules that we have written.
-We have two modules to deal with constraints, \texttt{Constraint}. To transform
-constraints to maps, we have written \texttt{TensorField} and \texttt{Tensor}
-modules, the latter of which performs operations on tensors including
-eigenvector calculations, as well as \texttt{Streamline}, which has the ability
-to calculate seed points and trace lines.
-
-We also created several generally useful modules, including \texttt{Vector2},
-which performs basic operations on 2-dimensional vectors and
-\texttt{NearestNeighbor}, which defines a type class for a structure that can
-store \texttt{Vector2}s and query for the nearest neighbor, as well as a
-bucket-based implementation of such a data structure. To deal with input and
-output, we created a \texttt{JSONParser} so that our input can come from any
-source that is capable of producing JSON, and an \texttt{SVGWriter}, which
-deals with the widely-used file format that produces the output seen in many of
-the figures in this paper.
 
 In an attempt to compare this with the original work, we consulted the header
 files available with Chen’s code. The system has significantly more
