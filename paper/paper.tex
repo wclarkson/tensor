@@ -1,6 +1,7 @@
 \documentclass[twocolumn]{article}
 \usepackage{amsmath}
 \usepackage{graphicx}
+\usepackage{subcaption}
 
 %borders
 \usepackage{float}
@@ -138,7 +139,15 @@ every point in the area. Finally, based on these eigenvector fields, we generate
 seed points from which to trace streamlines across the map. These streamlines
 produce the final roads.
 
-\todo{insert pipeline diagram}
+
+\begin{figure*}[t!]
+\todo{reimplement pipeline image in \LaTeX}
+\begin{center}
+    \includegraphics[width=5.5in]{images/pipeline.pdf}
+\end{center}
+\caption{Overview of our pipeline}
+\label{fig:pipeline}
+\end{figure*}
 
 \subsection{User-Generated Constraints}
 We begin with a JSON parser, which accepts linear and radial constraints.
@@ -209,7 +218,7 @@ are then
     \epsilon_i = \left\{1,\frac{\lambda_i-a}{b}\right\}
 \]
 The eigenvectors are defined if the tensor field is not degenerate (that is,
-$a$ and $b$ are both zero) at that point.
+$a$ and $b$ are both zero) at that point \cite{find-evs}.
 
 \subsection{Streamline Tracing}
 Mathematically, the basic streamline tracing algorithm is fairly simple,
@@ -238,7 +247,12 @@ find the nearest neighbor out of the streamlines that have already been drawn.
 If it is within a certain separation distance, we draw a line directly between
 the two points.
 
-\todo{image of that nice circular constraint that worked really well with this}
+
+\begin{figure*}[t!]
+    \todo{image of that nice circular constraint that worked really well with this}
+\caption{Haskell implementation of eigenvector calculation}
+% \label{fig:cycles} name?
+\end{figure*}
 
 The third condition arises mainly with radial constraints. Although a true
 hyperstreamline would form a perfect circle around a point, our step-size
@@ -247,7 +261,24 @@ obviously a behavior that would not appear in normal maps (other than an
 apocalyptic Boston, perhaps). So, when we detect a streamline circling in on
 itself, we close the gap and end the spiral.
 
-\todo{death spiral and improved version}
+\floatstyle{plain}
+\restylefloat{figure}
+\begin{figure*}[t!]
+    \centering
+    \begin{subfigure}[b]{2.4in}
+        \fbox{\includegraphics[width=\textwidth]{images/cycle_nodetection.pdf}}
+        \caption{without cycle detection}
+    \end{subfigure}
+    \hspace{20pt}
+    \begin{subfigure}[b]{2.4in}
+        \fbox{\includegraphics[width=\textwidth]{images/cycle_detection.pdf}}
+        \caption{with cycle detection}
+    \end{subfigure}
+\caption{Streamline tracing cycle detection}
+\label{fig:cycles}
+\end{figure*}
+\floatstyle{boxed}
+\restylefloat{figure}
 
 \subsection{Seed Placement}
 To begin constructing a streamline, one must choose a seed point—an initial
@@ -293,8 +324,6 @@ according to the above metric. As with the previous method, we employ a
 simplifying heuristic, generating a relatively small set of candidate seed
 points, tracing a streamline from each, determining which streamline results in
 a more even field of streamlines, and adding it.
-
-\todo{add practical results of this method if we can get it working}
 
 \section{Assessment}
 There were two main goals that we set out to achieve with this project. Here we
