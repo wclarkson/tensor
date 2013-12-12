@@ -83,7 +83,7 @@ Later in the paper, we will assess our success in achieving these goals.
 \section{Mathematical Background}\label{sec:math}
 In this section we will introduce the mathematical concepts necessary to
 understand our algorithm. A tensor $t$ is a geometric object represented by a
-2x2 symmetric, traceless matrix:
+$2\times2$ symmetric, traceless matrix:
 \[
     \sqmat{\cos{2\theta}}{\sin{2\theta}}{\sin{2\theta}}{-\cos{2\theta}}
     = \sqmat{a}{b}{b}{-a}
@@ -234,7 +234,7 @@ where $d$ is a decay constant, $\pt_i$ is the point at which the $i$th
 constraint is defined, and $T_i$ is the basis field corresponding to the $i$th
 constraint.
 
-\subsection{Eigenvectors}
+\subsection{Eigenvectors}\label{sec:eigenvectors}
 The eigenvalues of a tensor $t$ represented by the matrix $\sqmat{a}{b}{b}{-a}$
 are:
 \begin{align}
@@ -257,11 +257,12 @@ there are several important cases to consider. In order to trace the
 streamlines, we are forced to use a heuristic, since it isn’t possible to trace
 a continuous line over a constantly-changing tensor field. In order to
 approximate this, we choose a step size $d_\textrm{step}$. Beginning at a seed
-point, which is chosen using the methods detailed in Section \ref{seedpoints},
-we calculate the eigenvector at that point, extend a line in that direction
-with length $d_\textrm{step}$, and check if we have reached an end condition.
-This process is repeated on the line until one of three end conditions is
-reached:
+point, which is chosen using the methods detailed in Section
+\ref{sec:seedpoints}, we calculate the eigenvector at that point, extend a line
+in that direction with length $d_\textrm{step}$, and check if we have reached
+an end condition.  This process is repeated on the line until one of three end
+conditions is reached:
+
 \begin{enumerate}
     \item The point is outside the bounds of the map area
     \item The point is within a certain distance of an existing streamline.
@@ -387,7 +388,23 @@ boundary makes this aspect of our pipeline very easily extensible.
 
 \subsection{Expressiveness}
 As our work was not a complete reimplementation of the system described in
-\cite{chen}
+\cite{chen}, it is difficult to compare the relative expressiveness of our
+Haskell code with the \cpp code of the original implementation. However, we
+will present one comparison of functions from our respective implementations
+with significantly overlapping functionality. Our Haskell code for calculating
+the eigenvectors for a tensor can be found in Figure \ref{fig:evecs}. The
+reader may note the close correspondence between the body of these functions
+and the mathematical formulas used for calculating eigenvectors in Section
+\ref{sec:eigenvectors}.  The 75-line function
+\texttt{cal\_eigenvecs\_onevert\_quad} in Chen's implementation. While it is
+documented, we found it difficult to determine the side effects it had. In a
+language without mutable state or side effect, we found it significantly easier
+to fully understand the behavior of functions.  In contrast, even well-written
+code in \cpp or another language in the imperative paradigm can be difficult to
+understand, because the possibility for side effect requires the reader to have
+an understanding of any part of the system that the function can affect, which
+in practice can make the effort to understand any small part of a large
+codebase much greater.
 
 \begin{figure*}[t!]
 \begin{Verbatim}[frame=single]
@@ -413,46 +430,17 @@ if a > d then (V2.Vector2 1 0, V2.Vector2 0 1)
 \label{fig:evecs}
 \end{figure*}
 
-\subsection{Modularity \& Extensibility}
-
-In an attempt to compare this with the original work, we consulted the header
-files available with Chen’s code. The system has significantly more
-functionality than ours, but we had some difficulty discerning which modules
-were parallel to ours. The \texttt{tensoranalysis} contains methods for tensor
-line tracing, and \texttt{ClosedStreamlineTracing} seems to be related,
-although we did not find documentation on the difference between open and
-closed tracing. \texttt{SeedPointCtrlDlg} is a dialogue probably related to the
-OpenGL framework, but didn’t have the actual calculations of seed points. At
-the least, our implementation has a more direct pipeline-to-module correlation,
-which will be beneficial for future contributors who wish to build off of our
-work.
-
-\subsection{Natural Expression of Underlying Mathematics}
-Overall, this seemed to be successful. In general, functional languages are
-well suited to express mathematics. Our decision to implement this program in
-Haskell meant that that we were able to take advantage of this natural
-proclivity towards math in order to make our code easy to understand.
-
-An example of this can be seen in the calculation of eigenvectors. We derived
-the formula for the eigenvector of a symmetric, traceless tensor
-(see Section~\ref{sec:math}) and implemented it in the functions in
-Figure~\ref{fig:evecs}.
-
-In [Chen], there is a 75-line function,
-\texttt{cal\_eigenvecs\_onevert\_quad}, to do approximately the same thing. There
-is a fair amount of documentation in the body of the function, explaining what
-each line does, but there also seem to be some side effects relating to global
-variables and large data structures that the authors found difficult to follow,
-mostly by the nature of the language.  Generally speaking, we found that the
-mathematics was significantly easier to express and review in a Haskell
-implementation.
-
 \section{Conclusion}
 In this paper we have presented the underlying mathematics and functional
-implementation of the work described in \cite{chen}, with the goals being that a
-functional implementation would easily express the mathematics and provide
+implementation of the work described in \cite{chen}, with the goals being that
+a functional implementation would readily express the mathematics, provide
 modularity that the imperative implementation provide in \cite{chen} could not.
-
+We believe that, due to the focus on expressibility and modularity, assessed in
+the previous section, that an individual looking to understand the pipeline
+will find our code undestandable and approachable, and lend itself to be
+easily extended. We hope that our work will motivate a greater use of
+functional languages in future efforts in the research of new procedural
+algorithms. 
 
 \bibliographystyle{alpha}
 \bibliography{references}
