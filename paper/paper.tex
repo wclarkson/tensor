@@ -18,6 +18,7 @@
     \end{array}\right)}}
 \newcommand{\pt}{\textbf{p}}
 \newcommand{\todo}[1]{\begin{center}\fbox{\parbox{150pt}{#1}}\end{center}}
+\def \cpp {C\nolinebreak[4]\hspace{-.05em}\raisebox{.4ex}{\tiny\bf ++}~}
 
 \begin{document}
 \maketitle
@@ -26,10 +27,47 @@
 \end{abstract}
 
 \section{Introduction}
+Visual artists often face the time-consuming task of generating extensive,
+realistic scenes by hand for movies and video games. However, the apparent
+randomness found in systems like street layouts can be modelled effectively
+with a variety of mathematical algorithms, giving rise to the growing field of
+procedural generation. In this paper we will discuss an algorithm using tensor
+fields, from [Chen], to generate realistic city street maps. To facilitate the
+generation of aesthetically pleasing maps which fit an artist's requirements,
+we implement a simple system of user-specified constraints to allow the user to
+shape the resulting street map to fit their needs.
 
 \section{Existing Work}
+\textit{Interactive Procedural Street Modelling} \cite{chen} introduces a novel
+new concept of using tensor fields to model realistic street layouts. They 
+offer
+a well-defined pipeline of mathematical operations to go from simple user
+inputs to a final street graph. They also implement a number of operations to
+modify the street graph more granularly once it has been generated, such as
+removal of roads and retracing of the roads in a defined region with a new
+tensor field. The mathematical concepts fundamental to the procedural
+generation algorithm are covered thoroughly and clearly.
+
+While all of the information presented in the paper to be very well-formulated
+and informative, we found the provided implementation of the described
+algorithm more difficult to grasp. The large quantity of \cpp code necessary to
+implement the full-featured interactive system provided by Chen et al. made it
+difficult for us to thoroughly understand the constituent components such that
+we would be able to modify or extend the existing code.
 
 \section{Our Goals}
+We thought we could use the power and expressiveness of a functional language 
+to produce a more modular, extensible, and readable implementation of the core 
+of the algorithm described in Chen et al. which would provide a more 
+accessible starting point for later work to build off of. While we sacrifice 
+the performance offered by the \cpp implementation, which is closely tied to
+OpenGL, we contend that the gains in programmer productivity will more than
+make up for this deficit. While a production implementation of such a pipeline
+should certainly be implemented with efficiency in mind, we believe that, in
+the process of investigating new algorithms, the ease with which the
+implementor can translate an idea or mathematical concept into proof-of-concept
+code is of the utmost importance. Later in the paper, we will assess our
+success in achieving these goals.
 
 \section{Mathematical Background}
 A tensor $t$ is a *magical thing* represented by a 2x2 symmetric, traceless
@@ -80,12 +118,12 @@ cities.
 \subsection{User-Generated Constraints}
 We begin with a JSON parser, which accepts linear and radial constraints.
 Constraints must be input with their type, linear or radial, in addition to
-their position in the domain (in the form of x and y coordinates), and finally,
-if the constraint is linear, it’s direction in radians and magnitude. In
-addition, the executable will accept width and height parameters representing
-the size of the domain to build street maps on. Together, the JSON constraints
-and width/height parameters form the initial input data that will next be used
-to form tensor fields.
+their position in the domain (in the form of $x$ and $y$ coordinates), and
+finally, if the constraint is linear, it’s direction in radians and magnitude.
+In addition, the executable will accept width and height parameters
+representing the size of the domain to build street maps on. Together, the JSON
+constraints and width/height parameters form the initial input data that will
+next be used to form tensor fields.
 
 \subsection{Tensor Field Generation}
 From each constraint, a tensor field is defined across the entire domain; this
@@ -112,7 +150,8 @@ $\bf p$.
 \paragraph{Radial Constraints}
 A radial constraint is used to describe specifically circular areas, such as
 roundabouts or more generally curved roads, common in suburban areas. They are
-defined at a point $(x_0,y_0)$; major streamlines are drawn as concentric circles
+defined at a point $(x_0,y_0)$; major streamlines are drawn as concentric 
+circles
 around the point, while minor ones emanate outwards. The basis field for a
 radial constraint at a point $\pt=x_p,y_p$ is defined as
 \[
@@ -243,10 +282,13 @@ We believe that we were successful in creating a modular system with reusable
 parts that is easy to understand, extend, and modify. One way to illustrate
 this is by looking at our pipeline. As a refresher, look at Fig. ***. Each
 step of the pipeline has a clear correspondence in the modules that we have
-written. We have two modules to deal with constraints, \texttt{Constraint}. To transform
-constraints to maps, we have written \texttt{TensorField} and \texttt{Tensor} modules, the latter
+written. We have two modules to deal with constraints, \texttt{Constraint}. To 
+transform
+constraints to maps, we have written \texttt{TensorField} and \texttt{Tensor} 
+modules, the latter
 of which performs operations on tensors including eigenvector calculations, as
-well as \texttt{Streamline}, which has the ability to calculate seed points and trace
+well as \texttt{Streamline}, which has the ability to calculate seed points 
+and trace
 lines. 
 
 We also created several generally useful modules, including \texttt{Vector2},
