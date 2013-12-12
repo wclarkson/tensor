@@ -1,15 +1,28 @@
 \documentclass[twocolumn]{article}
-% \usepackage{bibtex}
+\usepackage{amsmath}
 
-\title{Modularizing Street Map Generation}
+\title{Modularizing Street Map Generation \\
+    \vspace{8pt} \large An Adventure in Tensors}
 \author{William Clarkson \and Marcella Hastings \and Nathaniel Tenczar}
 \date{\today}
+
+\newcommand{\sqmat}[4]{\ensuremath{
+    \left(\begin{array}{cc}
+        #1 & #2 \\
+        #3 & #4
+    \end{array}\right)}}
+\newcommand{\mkvec}[2]{\ensuremath{
+    \left(\begin{array}{c}
+        #1 \\
+        #2 \\
+    \end{array}\right)}}
+\newcommand{\pt}{\textbf{p}}
+\newcommand{\todo}[1]{\begin{center}\fbox{\parbox{150pt}{#1}}\end{center}}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-    Abstract will go here.
 \end{abstract}
 
 \section{Introduction}
@@ -19,15 +32,200 @@
 \section{Our Goals}
 
 \section{Mathematical Background}
+A tensor $t$ is a *magical thing* represented by a 2x2 symmetric, traceless
+matrix:
+\[
+    \sqmat{\cos{2\theta}}{\sin{2\theta}}{\sin{2\theta}}{-\cos{2\theta}}
+    = \sqmat{a}{b}{b}{-a}
+\]
+where $R$ is the magnitude and $\theta$ is the direction, and
+$R\geq0 \textrm{ and } \theta\in[0,2\pi)$. Since the matrix is symmetric and
+traceless, it is only necessary to store two values, $a$ and $b$ to encode
+the tensor.
+
+The major eigenvectors of $t$ are
+\[
+    \left\{
+        \lambda\mkvec{\cos{\theta}}{\sin{\theta}} ~|~ \lambda \neq 0
+    \right\}
+\]
+The minor eigenvectors are
+\[
+    \left\{
+        \lambda\mkvec
+                {\cos{(\theta+\frac{\pi}{2})}}
+                {\sin{(\theta+\frac{\pi}{2})}}
+        ~|~ \lambda \neq 0
+    \right\}
+\]
+A tensor field $T$ is a function that maps from 2D points to tensors. In the
+context of this project, a tensor is simply a tool we use to determine the
+direction of a field at a point. This direction is found by calculating the
+eigenvectors of the tensors. Major eigenvectors are parallel to the field;
+minor eigenvectors are perpendicular.
+
+Another important concept is the hyperstreamline. This is an effective way to
+visualize tensor fields. It is created by drawing a line through an eigenvector
+field such that the line is tangent to every eigenvector along its path. In
+this setting, there are major and minor hyperstreamlines that correspond to the
+major and minor eigenvectors. The major and minor eigenvectors of a tensor are
+guaranteed to be perpendicular for any tensor, unless it is a degenerate point
+in the tensor field ($T(\bf p)=0$), for which eigenvectors cannot be
+calculated. This property leads to the generation of perpendicular street
+intersections, a common feature of real-world road networks, especially in
+cities.
 
 \section{Pipeline}
 
 \section{Implementation Details}
 
+\subsection{User-Generated Constraints}
+
+\subsection{Tensor Field Generation}
+From each constraint, a tensor field is defined across the entire domain; this
+is called a basis field. The basis fields are then combined to produce a tensor
+field that describes the space and takes into account all of the specified
+constraints. This is done using an exponential decay combinator, such that when
+a basis is combined with others, the constraint that defined it has less
+influence on the direction of the field the further a point is from it. The
+equations in this section follow closely the system detailed in \cite{chen}.
+
+\paragraph{Linear Constraints}
+A linear constraint produces the grid pattern that is a common basis for many
+cities (consider the streets of Manhattan). The constraint has two parts: a
+magnitude $l$ and a direction $\theta$. The basis field for a linear constraint
+is defined as
+\[
+    T(\pt) =
+        l\sqmat{\cos{2\theta}}{\sin{2\theta}}{\sin{2\theta}}{-\cos{2\theta}}
+\]
+for any point $\bf p$ in the field. It is apparent from this definition that
+the direction of a linear basis field is constant, regardless of the value of
+$\bf p$.
+
+\paragraph{Radial Constraints}
+A radial constraint is used to describe specifically circular areas, such as
+roundabouts or more generally curved roads, common in suburban areas. They are
+defined at a point $(x_0,y_0)$; major streamlines are drawn as concentric circles
+around the point, while minor ones emanate outwards. The basis field for a
+radial constraint at a point $\pt=x_p,y_p$ is defined as
+\[
+    T(\pt) = \sqmat{y^2-x^2}{-2xy}{-2xy}{-(y^2-x^2)}
+\]
+where $x=x_p-x_0$ and $y=x_p-x_0$.
+
+\paragraph{Combining Basis Fields}
+In order to define a tensor field based on multiple basis fields, we use a
+function which sums the basis fields together with an exponential falloff,
+so the tensor field is most strongly influenced by a basis field close to
+the point around which that basis field is defined:
+\[
+    T(\pt) = \sum_i e^{-d||\pt-\pt_i||^2}T_i(\pt)
+\]
+where $d$ is a decay constant, $\pt_i$ is the point at which the $i$th
+constraint is defined, and $T_i$ is the basis field corresponding to the $i$th
+constraint.
+
+\paragraph{Eigenvectors}
+The eigenvalues of a tensor $t$ represented by the matrix $\sqmat{a}{b}{b}{-a}$
+are:
+\[
+    \lambda = \pm\sqrt{a^2+b^2} \\
+\]
+The major eigenvalue, $\lambda_1$, is the larger value, and the minor
+eigenvalue, $\lambda_2$ is the smaller value. The corresponding eigenvectors
+are then
+\[
+    \epsilon_i = \left\{1,\frac{\lambda_i-a}{b}\right\}
+\]
+The eigenvectors are defined if the tensor field is not degenerate (that is,
+$a$ and $b$ are both zero) at that point.
+
+\subsection{Streamline Tracing}
+Mathematically, the basic streamline tracing algorithm is fairly simple,
+however, in order to produce a set of streamlines that approximate a road map,
+there are several important cases to consider. In order to trace the
+streamlines, we are forced to use a heuristic, since it isn’t possible to trace
+a continuous line over a constantly-changing tensor field. In order to
+approximate this, we choose a step size $d_\textrm{step}$. Beginning at a seed
+point, which is chosen using the methods detailed in section XX, we calculate
+the eigenvector at that point, extend a line in that direction with length
+$d_\textrm{step}$, and check if we have reached an end condition.  This process
+is repeated until the line until one of three end conditions is reached:
+\begin{enumerate}
+    \item The point is outside the bounds of the map area
+    \item The point is within a certain distance of an existing streamline.
+    \item The point is part of a cycle
+\end{enumerate}
+
+The first is self-explanatory; if the streamline leaves the boundary of the
+map, then we don’t need to draw it any more. The second is one of the
+alterations we used, based on the work of \cite{chen}. When designing a set of
+roads, it is rare that two streets will approach each other and not connect,
+whether they approach at a larger angle (an intersection) or are running mostly
+parallel to each other (a merge zone). To approximate this, at each point we
+find the nearest neighbor out of the streamlines that have already been drawn.
+If it is within a certain separation distance, we draw a line directly between
+the two points. 
+
+\todo{image of that nice circular constraint that worked really well with this}
+
+The third condition arises mainly with radial constraints. Although a true
+hyperstreamline would form a perfect circle around a point, our step-size
+approximation means that the trace is more likely to form a spiral. This is
+obviously a behavior that would not appear in normal maps (other than an
+apocalyptic Boston, perhaps). So, when we detect a streamline circling in on
+itself, we close the gap and end the spiral.
+
+\todo{death spiral and improved version}
+
+\subsection{Seed Placement}
+To begin constructing a streamline, one must choose a seed point—an initial
+coordinate in 2D space from which the streamline is traced. In practice, the
+matter of carefully choosing seed points is very important in generating an
+evenly spaced configuration of roads. We investigated three methods of placing
+seed points:
+\begin{enumerate}
+    \item Random
+    \item Furthest-Point
+    \item Even Streamline Spacing
+\end{enumerate}
+Purely random placement of seed points generally results in both clusters of
+roads which are too close together and large gaps between roads. In the
+furthest-point placement, we place each new seed point within the bounds of the
+space such that the distance to all existing streamlines is maximized. As a
+simplifying heuristic for this method, we generate a number of random candidate
+seed points which is small compared to the infinite number of possible seed
+points (constrained only by floating point precision) and choose the one
+furthest from all existing streamlines. In practice, this offers a significant
+improvement over the random seed placement, and results in a more even
+distribution of streamlines.
+
+However, even choosing well-spaced seed points will not necessarily result in
+an even distribution of streamlines, since two well-spaced seed points can
+result in two streamlines which quickly converge. Therefore, we introduce a
+third method. To assess how evenly spaced a set of streamlines is, we will
+generate a set of discrete points evenly spaced along each streamline, place
+these points into $n\times n$ equal-sized buckets covering the bounds of the
+space, and perform a chi-squared goodness of fit test on distribution of points
+across bucket, where the expected distribution is uniform:
+
+\todo{chi-squared equation}
+
+We will choose the seed point whose corresponding streamline, when added to the
+existing set of streamlines, optimizes the evenness of streamline placement,
+according to the above metric. As with the previous method, we employ a
+simplifying heuristic, generating a relatively small set of candidate seed
+points, tracing a streamline from each, determining which streamline results in
+a more even field of streamlines, and adding it.
+
+\todo{add practical results of this method if we can get it working}
+
 \section{Assessment of our Work}
 
 \section{Contributions}
 
+\onecolumn
 \bibliographystyle{plain}
 \bibliography{references}
 
