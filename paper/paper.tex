@@ -103,6 +103,7 @@ The major eigenvectors of $t$ are
         \lambda\mkvec{\cos{\theta}}{\sin{\theta}} ~|~ \lambda \neq 0
     \right\}
 \]
+
 The minor eigenvectors are
 \[
     \left\{
@@ -141,7 +142,6 @@ produce the final roads.
 
 
 \begin{figure*}[t!]
-\todo{reimplement pipeline image in \LaTeX}
 \begin{center}
     \includegraphics[width=5.5in]{images/pipeline.pdf}
 \end{center}
@@ -158,6 +158,40 @@ In addition, the executable will accept width and height parameters
 representing the size of the domain to build street maps on. Together, the JSON
 constraints and width/height parameters form the initial input data that will
 next be used to form tensor fields.
+
+% \floatstyle{plain}
+% \restylefloat{figure}
+\begin{figure*}[t!]
+    \centering
+    \begin{subfigure}[b]{2.4in}
+        \begin{verbatim}
+            [{
+              "tycon" : "Linear",
+              "posx" : 2,
+              "posy" : 2,
+              "dir" : 0.01,
+              "mag" : 3
+            },
+            {
+              "tycon" : "Radial",
+              "posx" : 10,
+              "posy" : 10,
+              "dir" : 0,
+              "mag" : 0
+            }]
+        \end{verbatim}
+        \caption{JSON file from by user}
+    \end{subfigure}
+    \hspace{20pt}
+    \begin{subfigure}[b]{2.4in}
+        \todo{image from constraints to left}
+        \caption{generated constraints}
+    \end{subfigure}
+\caption{JSON parsing of constrains}
+\label{fig:json}
+\end{figure*}
+% \floatstyle{boxed}
+% \restylefloat{figure}
 
 \subsection{Tensor Field Generation}
 From each constraint, a tensor field is defined across the entire domain; this
@@ -191,7 +225,7 @@ radial constraint at a point $\pt=x_p,y_p$ is defined as
 \[
     T(\pt) = \sqmat{y^2-x^2}{-2xy}{-2xy}{-(y^2-x^2)}
 \]
-where $x=x_p-x_0$ and $y=x_p-x_0$.
+where $x=x_p-x_0$ and $y=y_p-y_0$.
 
 \paragraph{Combining Basis Fields}
 In order to define a tensor field based on multiple basis fields, we use a
@@ -227,10 +261,11 @@ there are several important cases to consider. In order to trace the
 streamlines, we are forced to use a heuristic, since it isn’t possible to trace
 a continuous line over a constantly-changing tensor field. In order to
 approximate this, we choose a step size $d_\textrm{step}$. Beginning at a seed
-point, which is chosen using the methods detailed in section XX, we calculate
-the eigenvector at that point, extend a line in that direction with length
-$d_\textrm{step}$, and check if we have reached an end condition.  This process
-is repeated until the line until one of three end conditions is reached:
+point, which is chosen using the methods detailed in Section \ref{seedpoints},
+we calculate the eigenvector at that point, extend a line in that direction
+with length $d_\textrm{step}$, and check if we have reached an end condition.
+This process is repeated until the line until one of three end conditions is
+reached:
 \begin{enumerate}
     \item The point is outside the bounds of the map area
     \item The point is within a certain distance of an existing streamline.
@@ -249,8 +284,8 @@ the two points.
 
 
 \begin{figure*}[t!]
-    \todo{image of that nice circular constraint that worked really well with this}
-\caption{Haskell implementation of eigenvector calculation}
+    \todo{image of that nice circular constraint that worked really well with
+    this}
 % \label{fig:cycles} name?
 \end{figure*}
 
@@ -280,7 +315,7 @@ itself, we close the gap and end the spiral.
 \floatstyle{boxed}
 \restylefloat{figure}
 
-\subsection{Seed Placement}
+\subsection{Seed Placement}\label{seedpoints}
 To begin constructing a streamline, one must choose a seed point—an initial
 coordinate in 2D space from which the streamline is traced. In practice, the
 matter of carefully choosing seed points is very important in generating an
@@ -349,23 +384,21 @@ eigenvectors (Tensor a 0.0 d) =
            mkEvec eval    = V2.Vector2 1 ((eval - a) / b)
        in (mkEvec eval1, mkEvec eval2)
 \end{verbatim}
-\caption{Haskell implementation of eigenvector calculation}
+\caption{Haskell implementation of eigenvector calculation (from
+            \texttt{Tensor.hs})}
 \label{fig:evecs}
 \end{figure*}
 
 \subsection{Modularity \& Extensibility}
 We believe that we were successful in creating a modular system with reusable
 parts that is easy to understand, extend, and modify. One way to illustrate
-this is by looking at our pipeline. As a refresher, look at Fig. ***. Each
-step of the pipeline has a clear correspondence in the modules that we have
-written. We have two modules to deal with constraints, \texttt{Constraint}. To
-transform
+this is by looking at our pipeline (Figure \ref{fig:pipeline}). Each step of
+the pipeline has a clear correspondence in the modules that we have written.
+We have two modules to deal with constraints, \texttt{Constraint}. To transform
 constraints to maps, we have written \texttt{TensorField} and \texttt{Tensor}
-modules, the latter
-of which performs operations on tensors including eigenvector calculations, as
-well as \texttt{Streamline}, which has the ability to calculate seed points
-and trace
-lines.
+modules, the latter of which performs operations on tensors including
+eigenvector calculations, as well as \texttt{Streamline}, which has the ability
+to calculate seed points and trace lines.
 
 We also created several generally useful modules, including \texttt{Vector2},
 which performs basic operations on 2-dimensional vectors and
