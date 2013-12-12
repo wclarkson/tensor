@@ -1,4 +1,5 @@
-module Streamline (PlacementMethod, traceLines) where
+module Streamline (PlacementMethod (Random, Furthest, Improved), traceLines)
+where
 
 import TensorField as TF
 import Vector2 (Vector2 (Vector2))
@@ -106,6 +107,6 @@ placeStreamlines tf nn n fw fh Furthest =
 placeStreamlines tf nn n fw fh Improved =
   fst $ placeSeedsImproved (tensorfieldEigenvectors tf) nn [] n fw fh
 
-traceLines :: TensorField -> Float -> Float -> [SVGElem]
-traceLines tf fw fh =
-  map drawStreamline $ placeStreamlines tf (NN.new fw fh 25) 8 fw fh Furthest
+traceLines :: TensorField -> Float -> Float -> PlacementMethod -> [SVGElem]
+traceLines tf fw fh method =
+  map drawStreamline $ placeStreamlines tf (NN.new fw fh 25) 8 fw fh method
