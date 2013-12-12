@@ -1,5 +1,6 @@
 \documentclass[twocolumn]{article}
 \usepackage{amsmath}
+% \usepackage{natbib}
 
 \title{Modularizing Street Map Generation \\
     \vspace{8pt} \large An Adventure in Tensors}
@@ -40,16 +41,15 @@ realistic scenes by hand for movies and video games. However, the apparent
 randomness found in systems like street layouts can be modelled effectively
 with a variety of mathematical algorithms, giving rise to the growing field of
 procedural generation. In this paper we will discuss an algorithm using tensor
-fields, from [Chen], to generate realistic city street maps. To facilitate the
-generation of aesthetically pleasing maps which fit an artist's requirements,
-we implement a simple system of user-specified constraints to allow the user to
-shape the resulting street map to fit their needs.
+fields, from \cite{Chen}, to generate realistic city street maps. To facilitate
+the generation of aesthetically pleasing maps which fit an artist's
+requirements, we implement a simple system of user-specified constraints to
+allow the user to shape the resulting street map to fit their needs.
 
 \section{Existing Work}
 \textit{Interactive Procedural Street Modelling} \cite{chen} introduces a novel
 new concept of using tensor fields to model realistic street layouts. They
-offer
-a well-defined pipeline of mathematical operations to go from simple user
+offer a well-defined pipeline of mathematical operations to go from simple user
 inputs to a final street graph. They also implement a number of operations to
 modify the street graph more granularly once it has been generated, such as the
 removal and retracing of the roads in a defined region with a new
@@ -79,7 +79,7 @@ code is of the utmost importance. Later in the paper, we will assess our
 success in achieving these goals.
 
 \section{Mathematical Background}
-A tensor $t$ is a *magical thing* represented by a 2x2 symmetric, traceless
+A tensor $t$ is a geometric object represented by a 2x2 symmetric, traceless
 matrix:
 \[
     \sqmat{\cos{2\theta}}{\sin{2\theta}}{\sin{2\theta}}{-\cos{2\theta}}
@@ -151,7 +151,7 @@ field that describes the space and takes into account all of the specified
 constraints. This is done using an exponential decay combinator, such that when
 a basis is combined with others, the constraint that defined it has less
 influence on the direction of the field the further a point is from it. The
-equations in this section follow closely the system detailed in \cite{chen}.
+equations in this section follow closely the system detailed in \cite{Chen}.
 
 \paragraph{Linear Constraints}
 A linear constraint produces the grid pattern that is a common basis for many
@@ -224,7 +224,7 @@ is repeated until the line until one of three end conditions is reached:
 
 The first is self-explanatory; if the streamline leaves the boundary of the
 map, then we don’t need to draw it any more. The second is one of the
-alterations we used, based on the work of \cite{chen}. When designing a set of
+alterations we used, based on the work of \cite{Chen}. When designing a set of
 roads, it is rare that two streets will approach each other and not connect,
 whether they approach at a larger angle (an intersection) or are running mostly
 parallel to each other (a merge zone). To approximate this, at each point we
@@ -294,7 +294,7 @@ a more even field of streamlines, and adding it.
 There were two main goals that we set out to achieve with this project. Here we
 present a mostly heuristic, slightly quantitative attempt to qualify our
 success, using both internal evaluation and comparisons to existing systems
-\cite{chen}.
+\cite{Chen}.
 
 \subsection{Modularity \& Extensibility}
 We believe that we were successful in creating a modular system with reusable
@@ -340,7 +340,7 @@ proclivity towards math in order to make our code easy to understand.
 
 \section{Contributions}
 
-\bibliographystyle{plain}
+\bibliographystyle{alpha}
 \bibliography{references}
 
 \end{document}
