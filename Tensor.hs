@@ -44,8 +44,10 @@ isReal (Tensor a b c) =
 -- returns a tuple of the (larger, smaller) eigenvectors of a tensor
 eigenvalues :: Tensor -> (Float, Float)
 eigenvalues (Tensor a b d) = 
-  let evals f = (f (a + d) (sqrt (4*b*b + (a - d)*(a - d)))) / 2
-  in  (evals (+), evals (-))
+--  let evals f = (f (a + d) (sqrt (4*b*b + (a - d)*(a - d)))) / 2
+  let eval = sqrt (a*a + b*b) 
+  in  (eval, (-1)*eval)
+-- in  (evals (+), evals (-))
 
 -- returns a tuple of the (major, minor) eigenvectors for a tensor
 eigenvectors :: Tensor -> (V2.Vector2, V2.Vector2)
