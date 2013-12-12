@@ -35,10 +35,9 @@ This paper addresses the issue of creating modular, extensible code given an
 existing solution to a problem, namely, interactively modeling large street
 networks. We describe a functional implementation of a framework that allows
 users to create a realistic street network over an empty domain, based on the
-techniques described
-in [Chen]. In particular, we were able to express the underlying mathematics
+techniques described in \textit{Interactive Procedural Street Modelling}
+\cite{chen}. In particular, we were able to express the underlying mathematics
 more intuitively and clearly than is possible in an imperative language.
-
 \end{abstract}
 
 \section{Introduction}
@@ -47,16 +46,15 @@ realistic scenes by hand for movies and video games. However, the apparent
 randomness found in systems like street layouts can be modelled effectively
 with a variety of mathematical algorithms, giving rise to the growing field of
 procedural generation. In this paper we will discuss an algorithm using tensor
-fields, from [Chen], to generate realistic city street maps. To facilitate the
-generation of aesthetically pleasing maps which fit an artist's requirements,
-we implement a simple system of user-specified constraints to allow the user to
-shape the resulting street map to fit their needs.
+fields, from \cite{chen}, to generate realistic city street maps. To facilitate
+the generation of aesthetically pleasing maps which fit an artist's
+requirements, we implement a simple system of user-specified constraints to
+allow the user to shape the resulting street map to fit their needs.
 
 \section{Existing Work}
 \textit{Interactive Procedural Street Modelling} \cite{chen} introduces a novel
 new concept of using tensor fields to model realistic street layouts. They
-offer
-a well-defined pipeline of mathematical operations to go from simple user
+offer a well-defined pipeline of mathematical operations to go from simple user
 inputs to a final street graph. They also implement a number of operations to
 modify the street graph more granularly once it has been generated, such as the
 removal and retracing of the roads in a defined region with a new
@@ -87,7 +85,7 @@ success in achieving these goals.
 
 \section{Mathematical Background}
 \label{sec:math}
-A tensor $t$ is a *magical thing* represented by a 2x2 symmetric, traceless
+A tensor $t$ is a geometric object represented by a 2x2 symmetric, traceless
 matrix:
 \[
     \sqmat{\cos{2\theta}}{\sin{2\theta}}{\sin{2\theta}}{-\cos{2\theta}}
@@ -384,7 +382,7 @@ implementation.
 
 \section{Contributions}
 
-\bibliographystyle{plain}
+\bibliographystyle{alpha}
 \bibliography{references}
 
 \end{document}
