@@ -17,4 +17,6 @@ Main
 .*.swp
 .*.swo
 
+tensor
+
 .DS_Store
