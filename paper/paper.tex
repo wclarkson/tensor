@@ -39,27 +39,28 @@ shape the resulting street map to fit their needs.
 
 \section{Existing Work}
 \textit{Interactive Procedural Street Modelling} \cite{chen} introduces a novel
-new concept of using tensor fields to model realistic street layouts. They 
+new concept of using tensor fields to model realistic street layouts. They
 offer
 a well-defined pipeline of mathematical operations to go from simple user
 inputs to a final street graph. They also implement a number of operations to
-modify the street graph more granularly once it has been generated, such as
-removal of roads and retracing of the roads in a defined region with a new
+modify the street graph more granularly once it has been generated, such as the
+removal and retracing of the roads in a defined region with a new
 tensor field. The mathematical concepts fundamental to the procedural
 generation algorithm are covered thoroughly and clearly.
 
-While all of the information presented in the paper to be very well-formulated
-and informative, we found the provided implementation of the described
+While all of the information presented in the paper completely describes all of
+the necessary mathematics in a clear manner,
+we found the provided implementation of the described
 algorithm more difficult to grasp. The large quantity of \cpp code necessary to
 implement the full-featured interactive system provided by Chen et al. made it
 difficult for us to thoroughly understand the constituent components such that
 we would be able to modify or extend the existing code.
 
 \section{Our Goals}
-We thought we could use the power and expressiveness of a functional language 
-to produce a more modular, extensible, and readable implementation of the core 
-of the algorithm described in Chen et al. which would provide a more 
-accessible starting point for later work to build off of. While we sacrifice 
+We thought we could use the power and expressiveness of a functional language
+to produce a more modular, extensible, and readable implementation of the core
+of the algorithm described in Chen et al. which would provide a more
+accessible starting point for later work to build off of. While we sacrifice
 the performance offered by the \cpp implementation, which is closely tied to
 OpenGL, we contend that the gains in programmer productivity will more than
 make up for this deficit. While a production implementation of such a pipeline
@@ -96,7 +97,8 @@ The minor eigenvectors are
         ~|~ \lambda \neq 0
     \right\}
 \]
-A tensor field $T$ is a function that maps from 2D points to tensors. In the
+A tensor field $T$ describes the flow of the constraints across a field,
+and is represented as a function that maps from 2D points to tensors. In the
 context of this project, a tensor is simply a tool we use to determine the
 direction of a field at a point. This direction is found by calculating the
 eigenvectors of the tensors. Major eigenvectors are parallel to the field;
@@ -159,7 +161,7 @@ $\bf p$.
 \paragraph{Radial Constraints}
 A radial constraint is used to describe specifically circular areas, such as
 roundabouts or more generally curved roads, common in suburban areas. They are
-defined at a point $(x_0,y_0)$; major streamlines are drawn as concentric 
+defined at a point $(x_0,y_0)$; major streamlines are drawn as concentric
 circles
 around the point, while minor ones emanate outwards. The basis field for a
 radial constraint at a point $\pt=x_p,y_p$ is defined as
@@ -220,7 +222,7 @@ whether they approach at a larger angle (an intersection) or are running mostly
 parallel to each other (a merge zone). To approximate this, at each point we
 find the nearest neighbor out of the streamlines that have already been drawn.
 If it is within a certain separation distance, we draw a line directly between
-the two points. 
+the two points.
 
 \todo{image of that nice circular constraint that worked really well with this}
 
@@ -291,14 +293,14 @@ We believe that we were successful in creating a modular system with reusable
 parts that is easy to understand, extend, and modify. One way to illustrate
 this is by looking at our pipeline. As a refresher, look at Fig. ***. Each
 step of the pipeline has a clear correspondence in the modules that we have
-written. We have two modules to deal with constraints, \texttt{Constraint}. To 
+written. We have two modules to deal with constraints, \texttt{Constraint}. To
 transform
-constraints to maps, we have written \texttt{TensorField} and \texttt{Tensor} 
+constraints to maps, we have written \texttt{TensorField} and \texttt{Tensor}
 modules, the latter
 of which performs operations on tensors including eigenvector calculations, as
-well as \texttt{Streamline}, which has the ability to calculate seed points 
+well as \texttt{Streamline}, which has the ability to calculate seed points
 and trace
-lines. 
+lines.
 
 We also created several generally useful modules, including \texttt{Vector2},
 which performs basic operations on 2-dimensional vectors and
