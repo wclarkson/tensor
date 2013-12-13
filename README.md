@@ -3,7 +3,9 @@ Created by Will Clarkson, Marcella Hastings, and Nate Tenczar.
 
 ## Usage
 Try out `tensor` by running:
-  tensor <constraints-file> <width> <height> <placement-method>
+
+```tensor <constraints-file> <width> <height> <placement-method>```
+
 There are some example constraints files in `json_files`. Valid placement
 methods are currently `random` and `furthest`.
 
