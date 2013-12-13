@@ -1,21 +1,17 @@
-{-# LANGUAGE OverloadedStrings, DeriveGeneric, NamedFieldPuns #-}
+{-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 
-module JSONParser
-where
+module JSONParser where
 
 import Data.Aeson
 import GHC.Generics
 import Constraint
 import Vector2
 
-data Input = Input
-           {
-            tycon :: String,
-            posx  :: Float,
-            posy  :: Float,
-            dir   :: Float,
-            mag   :: Float
-            } deriving (Show, Generic)
+data Input = Input {  tycon :: String,
+                      posx  :: Float,
+                      posy  :: Float,
+                      dir   :: Float,
+                      mag   :: Float  } deriving (Show, Generic)
 
 instance FromJSON Input
 instance ToJSON Input

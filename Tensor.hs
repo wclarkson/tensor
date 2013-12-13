@@ -12,7 +12,7 @@ data Tensor = Tensor { a :: Float, b :: Float, d :: Float }
 trivial :: Tensor
 trivial = Tensor 0 0 0
 
--- Creating Tensors from various types of constraints
+-- Creating tensors from various types of constraints
 
 fromRTheta :: Float -> Float -> Tensor
 fromRTheta r t = Tensor (r*cos(2*t)) (r*sin(2*t)) (-1*r*cos(2*t))
@@ -22,7 +22,7 @@ fromXY x y = let xy = -2 * x * y
                  diffSquares = y * y - x * x
              in Tensor diffSquares xy (-1 * diffSquares)
 
--- Basic Tensor operations
+-- Basic tensor operations
 
 add :: Tensor -> Tensor -> Tensor
 add (Tensor a1 b1 d1) (Tensor a2 b2 d2) =
@@ -44,10 +44,8 @@ isReal (Tensor a b c) =
 -- returns a tuple of the (larger, smaller) eigenvectors of a tensor
 eigenvalues :: Tensor -> (Float, Float)
 eigenvalues (Tensor a b d) = 
---  let evals f = (f (a + d) (sqrt (4*b*b + (a - d)*(a - d)))) / 2
   let eval = sqrt (a*a + b*b) 
   in  (eval, (-1)*eval)
--- in  (evals (+), evals (-))
 
 -- returns a tuple of the (major, minor) eigenvectors for a tensor
 eigenvectors :: Tensor -> (V2.Vector2, V2.Vector2)
@@ -58,5 +56,3 @@ eigenvectors (Tensor a b d) =
     let (eval1, eval2) = eigenvalues (Tensor a b d)
         mkEvec eval    = V2.Vector2 1 ((eval - a) / b)
     in (mkEvec eval1, mkEvec eval2)
-
-

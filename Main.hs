@@ -23,15 +23,15 @@ main = getArgs >>= parseCmdArgs
 def :: String
 def = "furthest"
 
-parseCmdArgs ["-h"]            = usage                                   >> exit
-parseCmdArgs ["-v"]            = version                                 >> exit
-parseCmdArgs [file, fw, fh]    = (buildViz file (read fw) (read fh) def) >> exit
-parseCmdArgs [file, fw, fh, o] = (buildViz file (read fw) (read fh) o)   >> exit
-parseCmdArgs _                 = usage                                   >> exit
+parseCmdArgs ["-h"]            = usage                                 >> exit
+parseCmdArgs ["-v"]            = version                               >> exit
+parseCmdArgs [file, fw, fh]    = buildViz file (read fw) (read fh) def >> exit
+parseCmdArgs [file, fw, fh, o] = buildViz file (read fw) (read fh) o   >> exit
+parseCmdArgs _                 = usage                                 >> exit
 
 usage   = putStrLn "usage: tensor <inputFile> <fieldWidth> <fieldHeight> [opt]"
 version = putStrLn "Tensor v0.1"
-exit    = exitWith ExitSuccess
+exit    = exitSuccess
 die     = exitWith (ExitFailure 1)
 
 buildViz :: FilePath -> Float -> Float -> String -> IO ()

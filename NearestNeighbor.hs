@@ -5,15 +5,13 @@ import Data.Vector ((//), (!))
 import qualified Util
 import qualified Vector2 as V2
 
---data Point = Point Float Float deriving Show
-
 class NearestNeighbor a where
   data (Storage a)
   new    :: Float -> Float -> Int -> Storage a
   insert :: Storage a -> (V2.Vector2, a) -> Storage a
   lookup :: Storage a -> V2.Vector2 -> Maybe (V2.Vector2, a)
 
-{-
+{- Naive implementation for testing
 instance NearestNeighbor a where
   data (Storage a) = List [(V2.Vector2, a)]
   new _ _ _ = List []
@@ -30,8 +28,8 @@ instance NearestNeighbor a where
 instance NearestNeighbor a where
   data (Storage a) = Buckets { width   :: Float, height :: Float,
                                xsize   :: Float, ysize  :: Float,
-                               buckets :: V.Vector (V.Vector [(V2.Vector2, a)]) }
-                               deriving Show
+                               buckets :: V.Vector (V.Vector [(V2.Vector2, a)])
+                               } deriving Show
   new    = bucketsNew
   insert = bucketsInsert
   lookup = bucketsLookup
