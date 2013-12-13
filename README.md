@@ -1,5 +1,13 @@
-# Resources
+# Tensor: A System for Procedural Generation of Street Maps
+Created by Will Clarkson, Marcella Hastings, and Nate Tenczar.
 
+## Usage
+Try out `tensor` by running:
+  tensor <constraints-file> <width> <height> <placement-method>
+There are some example constraints files in `json_files`. Valid placement
+methods are currently `random` and `furthest`.
+
+## Resources
 ### Interactive Procedural Street Modeling ([pdf][wonka])
 The main paper that we're working from. Their code is [here][wonka-code].
 

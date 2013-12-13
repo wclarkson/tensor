@@ -1,4 +1,4 @@
-FLAGS=-Wall -Werror -fno-warn-name-shadowing
+FLAGS=-fno-warn-name-shadowing
 EXTRAFLAGS=-XTypeFamilies -XFlexibleInstances -XDeriveGeneric -fno-warn-name-shadowing
 
 main: Main.hs
